@@ -12,7 +12,7 @@ if (!dbURI) {
     throw new Error("Database URI is not defined!")
 }
 
-export const conntectDb = async (): Promise<void> => {
+export const connectDb = async (): Promise<void> => {
     //* Checking if database is already connected
     if (connection.isConntected) {
         console.log("Already Connected To Database");

@@ -18,10 +18,10 @@ interface IUser  {
     username: string;
     email: string;
     phone: string;
-    password: string
-    role: UserRoles
-    avatar: String,
-    isVerified?: boolean;
+    password: string;
+    role: UserRoles;
+    avatar: string;
+    isVerified: boolean;
 }
 
 
