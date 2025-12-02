@@ -14,9 +14,9 @@ const HomePage = () => {
        <Button variant={"outline"}>
         Hey
       </Button>
-       <Button variant={"ghost"}>
+       <div className='bg-base-gradient ' >
         Hey
-      </Button>
+      </div>
        <Button variant={"link"}>
         Hey
       </Button>

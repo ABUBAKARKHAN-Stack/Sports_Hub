@@ -40,6 +40,7 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+  --font-outfit: var(--font-outfit)
 }
 
 :root {
@@ -52,25 +53,28 @@
   /* Cards Color  */
   --card: #F9F9F6;
   --card-foreground: #192335;
-  
+
   --popover: #F9F9F6;
   --popover-foreground: #192335;
 
-  
+
   --primary: #097E52;
+  
+  --background-gradient: linear-gradient(93.86deg, #006177 -2.6%, #269089 67.39%, #7ABC82 110.84%);
   --primary-foreground: oklch(0.985 0 0);
 
-  --secondary: #192335;
+  --secondary: #23B33A;
   --secondary-foreground: #F9F9F6;
 
 
   --muted: oklch(0.97 0 0);
   --muted-foreground: oklch(0.556 0 0);
-  
+
   --accent: oklch(0.97 0 0);
   --accent-foreground: #097E52;
 
-  --destructive: oklch(0.577 0.245 27.325);
+  --destructive: #F50303;
+
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
   --ring: oklch(0.708 0 0);
@@ -94,6 +98,7 @@
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
   }
