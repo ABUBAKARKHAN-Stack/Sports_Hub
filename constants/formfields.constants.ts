@@ -1,18 +1,14 @@
-import { EyeClosed, EyeOff, LucideIcon, Mail } from 'lucide-react';
+import { UserRoles } from '@/types/main.types';
+import { EyeOff, Mail } from 'lucide-react';
 import { UserRound } from 'lucide-react';
 
-interface FormField {
-    name: string;
-    type: string;
-    label: string;
-    placeholder: string;
-}
 
-const signupFormFields: (FormField & { icon: LucideIcon })[] = [
+
+const signUpFields = [
     {
         name: "username",
         type: "text",
-        label: 'User name',
+        label: 'Username',
         placeholder: 'Enter your username',
         icon: UserRound,
     },
@@ -39,9 +35,21 @@ const signupFormFields: (FormField & { icon: LucideIcon })[] = [
         icon: EyeOff
 
     },
-];
+] as const;
+
+const signupRoles = [
+    {
+        id: UserRoles.USER,
+        label: "I am a Customer",
+    },
+    {
+        id: UserRoles.ADMIN,
+        label: "I am a Manager",
+    },
+] as const;
 
 
 export {
-    signupFormFields
+    signUpFields,
+    signupRoles
 }

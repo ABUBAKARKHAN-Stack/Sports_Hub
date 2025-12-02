@@ -13,8 +13,12 @@ export const POST = async (request: NextRequest) => {
         //* Extract Request body
         const userBody: IUser = await request.json();
 
+        
+
         //* Sanitize and validate userBody
         const sanitizedBody = userSchema.parse(userBody);
+
+                console.log(sanitizedBody);
 
         //* Create user 
         const user = await userModel.create({ ...sanitizedBody });
@@ -35,13 +39,13 @@ export const POST = async (request: NextRequest) => {
         //! Handle Zod validation errors
         if (error.name === "ZodError") {
             return NextResponse.json(
-                new ApiError(400, "Fill in all fields"),
+                new ApiError(400, "Invalid Input."),
                 { status: 400 }
             );
         }
 
         //! Handle MongoDB duplicate key error
-        if (error.code === 11000) {
+        if (error.code === 11000) {            
             const field = Object.keys(error.keyValue)[0];
             return NextResponse.json(
                 new ApiError(409, `User with this ${field} already exists.`),
