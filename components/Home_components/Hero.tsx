@@ -5,6 +5,7 @@ import { Search, MapPin, Filter, Check, Star } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import ContainerLayout from "../layout/ContainerLayout";
 
 export default function Hero() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -16,7 +17,9 @@ export default function Hero() {
   };
 
   return (
-    <section className="relative overflow-hidden py-12 md:py-20 bg-gradient-to-br from-[#004E56] via-[#0A7A63] to-[#34C56A]">
+    <section className="relative overflow-hidden bg-linear-to-br from-[#004E56] via-[#0A7A63] to-[#34C56A]">
+
+
       {/* Animated Background Elements */}
       <div className="absolute -top-32 -left-32 h-[320px] w-[320px] rounded-full bg-white/10 blur-[100px] animate-blob1" />
       <div className="absolute top-32 -right-40 h-[400px] w-[400px] rounded-full bg-white/10 blur-[120px] animate-blob2" />
@@ -25,7 +28,7 @@ export default function Hero() {
       <div className="absolute inset-0 bg-grid-white/[0.02] bg-[size:40px_40px]" />
 
       {/* Container */}
-      <div className="container mx-auto px-4 md:px-6 relative z-10">
+      <ContainerLayout className="relative z-10">
         <div className="grid lg:grid-cols-2 gap-10 md:gap-16 items-center">
 
           {/* LEFT CONTENT */}
@@ -157,8 +160,8 @@ export default function Hero() {
           </div>
 
         </div>
-      </div>
-
+      </ContainerLayout>
+      
       {/* Scroll Indicator */}
       <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 animate-bounce">
         <div className="w-6 h-10 border-2 border-white/50 rounded-full flex justify-center">
