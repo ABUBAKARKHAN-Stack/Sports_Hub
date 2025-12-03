@@ -1,7 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
-
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -45,36 +44,22 @@
 
 :root {
   --radius: 0.625rem;
-
-  /* Main Background And foreground Color */
   --background: #F9F9F6;
   --foreground: #192335;
-
-  /* Cards Color  */
   --card: #F9F9F6;
   --card-foreground: #192335;
-
   --popover: #F9F9F6;
   --popover-foreground: #192335;
-
-
   --primary: #097E52;
-  
   --background-gradient: linear-gradient(93.86deg, #006177 -2.6%, #269089 67.39%, #7ABC82 110.84%);
   --primary-foreground: oklch(0.985 0 0);
-
   --secondary: #23B33A;
   --secondary-foreground: #F9F9F6;
-
-
   --muted: #6B7385;
   --muted-foreground: #A8A8A8;
-
   --accent: oklch(0.97 0 0);
   --accent-foreground: #097E52;
-
   --destructive: #F50303;
-
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
   --ring: oklch(0.708 0 0);
@@ -93,13 +78,33 @@
   --sidebar-ring: oklch(0.708 0 0);
 }
 
-
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+}
+
+@layer utilities {
+  .bg-gradient-primary {
+    background: linear-gradient(93.86deg, #006177 -2.6%, #269089 67.39%, #7ABC82 110.84%);
+  }
+  
+  .text-gradient {
+    background: linear-gradient(93.86deg, #006177 -2.6%, #269089 67.39%, #7ABC82 110.84%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  .shadow-soft {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  }
+  
+  .shadow-medium {
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
   }
 }
