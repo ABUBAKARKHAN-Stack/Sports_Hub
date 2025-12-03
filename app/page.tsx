@@ -1,27 +1,25 @@
-import { Button } from '@/components/ui/button'
-import React from 'react'
+import Hero from "@/components/Home_components/Hero";
+import FeaturesGrid from "@/components/Home_components/FeaturesGrid";
+import HowItWorks from "@/components/Home_components/HowItWorks";
+import FeaturedVenues from "@/components/Home_components/FeaturedVenues";
+import FindVenues from "@/components/Home_components/FindVenues";
+import Testimonials from "@/components/Home_components/Testimonials";
+import VenueMember from "@/components/Home_components/VenueMember";
+import FAQ from "@/components/Home_components/FAQ";
+import Newsletter from "@/components/Home_components/Newsletter";
 
-const HomePage = () => {
+export default function Home() {
   return (
-    <div>
-      Hello From SportsHub
-      <Button variant={"default"}>
-        Hey
-      </Button>
-       <Button variant={"secondary"}>
-        Hey
-      </Button>
-       <Button variant={"outline"}>
-        Hey
-      </Button>
-       <div className='bg-base-gradient ' >
-        Hey
-      </div>
-       <Button variant={"link"}>
-        Hey
-      </Button>
-    </div>
-  )
+    <>
+      <Hero />
+      {/* <FeaturesGrid /> */}
+      <HowItWorks />
+      <FeaturedVenues />
+      <FindVenues />
+      <Testimonials />
+      <VenueMember />
+      <FAQ />
+      <Newsletter />
+    </>
+  );
 }
-
-export default HomePage
