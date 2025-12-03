@@ -4,7 +4,7 @@ import { signupSchema } from "@/schemas/auth.schema"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm, Controller } from "react-hook-form"
 import z from "zod"
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { Button } from "@/components/ui/button"
 import {
     Field,
@@ -30,6 +30,7 @@ import { IUser, UserRoles } from "@/types/main.types"
 import axiosInstance from "@/lib/axios"
 import { useToasts } from '@/hooks/toastNotifications'
 import { Spinner } from "@/components/ui/spinner"
+import { useRouter } from "next/navigation"
 
 const SignupForm = () => {
 
@@ -46,6 +47,8 @@ const SignupForm = () => {
     const { successToast, errorToast } = useToasts()
 
     const [signupAs, setSignupAs] = useState(UserRoles.USER)
+    const router = useRouter()
+    const timeoutRef = useRef<NodeJS.Timeout | null>(null)
 
     const [showPassword, setShowPassword] = useState({
         password: false,
@@ -60,7 +63,7 @@ const SignupForm = () => {
     }
 
     async function onSubmit(data: z.infer<typeof signupSchema>) {
-        const payload: Omit<IUser, "avatar" | "isVerified" | "phone"> = {
+        const payload: Omit<IUser, "avatar" | "isVerified" | "phone" | "provider"> = {
             username: data.username,
             email: data.email,
             password: data.password,
@@ -74,6 +77,9 @@ const SignupForm = () => {
                 successToast(response.data.message)
                 form.reset()
                 setSignupAs(UserRoles.USER)
+                timeoutRef.current = setTimeout(() => {
+                    router.push("/signin")
+                }, 300);
             }
         } catch (error: any) {
             const errMsg = error?.response?.data?.message || "Something went wrong while creating user"
@@ -81,6 +87,15 @@ const SignupForm = () => {
         }
 
     }
+
+    useEffect(() => {
+
+        return () => {
+            if (timeoutRef.current) {
+                clearTimeout(timeoutRef.current)
+            }
+        }
+    }, [])
 
     return (
 

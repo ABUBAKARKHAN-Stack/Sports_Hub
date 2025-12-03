@@ -1,4 +1,4 @@
-import { IUser } from "@/types/main.types";
+import { AuthProviderEnum, IUser } from "@/types/main.types";
 import { Schema, models, Model, model } from "mongoose";
 import { UserRoles } from "@/types/main.types";
 import { Document } from "mongoose";
@@ -12,6 +12,7 @@ const UserSchema = new Schema<UserModelType>({
     role: { type: String, enum: Object.values(UserRoles), default: UserRoles.USER },
     avatar: { type: String, default: null },
     isVerified: { type: Boolean, default: false },
+    provider: {type:String, enum: Object.values(AuthProviderEnum),default: AuthProviderEnum.CREDENTIALS}
 })
 
 

@@ -20,9 +20,9 @@ import {
     InputGroupInput,
 } from "@/components/ui/input-group"
 import { CircleArrowRight, Eye, EyeOff } from "lucide-react"
-import { useToasts } from '@/hooks/toastNotifications'
 import { Spinner } from "@/components/ui/spinner"
 import { useAuth } from "@/context/AuthContext"
+import { useAuthErrors } from "@/hooks/useAuthErrors"
 
 const SigninForm = () => {
 
@@ -36,10 +36,7 @@ const SigninForm = () => {
 
     const {
         signIn,
-        user
     } = useAuth()
-
-    
 
 
     const [showPassword, setShowPassword] = useState({

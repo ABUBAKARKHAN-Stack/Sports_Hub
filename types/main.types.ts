@@ -10,6 +10,11 @@ enum UserRoles {
     SUPER_ADMIN = "SUPER_ADMIN"
 }
 
+enum AuthProviderEnum {
+    CREDENTIALS = "CREDENTIALS",
+    GOOGLE = "GOOGLE"
+}
+
 interface IBooking { }
 interface IPayment { }
 interface IReview { }
@@ -21,7 +26,8 @@ interface IUser  {
     role: UserRoles;
     avatar: string;
     isVerified: boolean;
-    phone: string
+    phone: string;
+    provider: AuthProviderEnum
 }
 
 
@@ -31,5 +37,6 @@ export type {
 }
 
 export {
-    UserRoles
+    UserRoles,
+    AuthProviderEnum
 }

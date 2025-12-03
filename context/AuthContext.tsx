@@ -7,13 +7,15 @@ import {
     signIn as NextAuthSignIn,
     signOut as NextAuthSignOut,
     useSession,
-    
+
 } from 'next-auth/react'
 import { Session } from "next-auth";
 import { useToasts } from "@/hooks/toastNotifications";
+import { UserRoles } from "@/types/main.types";
+import { useRouter } from "next/navigation";
 
 type AuthContextType = {
-    user: Session | null;
+    session: Session | null;
     signIn: (provider?: string, options?: SignInOptions, authorizationParams?: Record<string, string>) => Promise<void>;
     signOut: (options?: SignOutParams) => Promise<void>;
     status: "authenticated" | "loading" | "unauthenticated",
@@ -22,11 +24,13 @@ type AuthContextType = {
 const AuthContext = createContext<AuthContextType | null>(null)
 
 const AuthProvider = ({ children }: { children: ReactNode }) => {
-    const { data: session,status } = useSession()
+    const { data: session, status } = useSession()
     const {
         successToast,
         errorToast,
     } = useToasts()
+
+    const router = useRouter()
 
 
 
@@ -36,60 +40,36 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
         authorizationParams?: Record<string, string>
     ) => {
         try {
-            const resp = await NextAuthSignIn(
-                provider,
-                { ...options, redirect: false },
-                authorizationParams
-            );
+            if (provider === "credentials") {
+                const resp = await NextAuthSignIn(provider, { ...options, redirect: false }, authorizationParams);
 
-            //! No response
-            if (!resp?.ok) {
-                console.error("[AuthContext] signIn(): No response from NextAuth");
-                errorToast("Unable to sign in. Please try again.");
-                return;
+                if (resp?.ok && !resp.error) {
+                    successToast("Signed in successfully!");
+
+                    if (session?.user.role === UserRoles.SUPER_ADMIN) {
+                        router.push('/super_admin/dashboard')
+                    } else if (session?.user.role === UserRoles.ADMIN) {
+                        router.push('/admin/dashboard')
+                    } else {
+                        router.push('/')
+                    }
+
+                    return;
+                }
+
+                const err = resp?.error;
+                switch (err) {
+                    case "CredentialsSignin":
+                        errorToast("Invalid email or password.");
+                        break;
+                    default:
+                        errorToast("Unexpected error. Please try again.");
+                        break;
+                }
+            } else {
+                //* For OAuth, just trigger popup
+                await NextAuthSignIn(provider, { ...options, callbackUrl: "/" });
             }
-
-            //* Success
-            if (resp.ok && !resp.error) {
-                console.log("[AuthContext] signIn() success:", resp);
-                successToast("Signed in successfully!");
-                return;
-            }
-
-            //! Error Handling
-            const err = resp.error;
-            console.error("[AuthContext] signIn() error:", err);
-
-            switch (err) {
-                case "CredentialsSignin":
-                    errorToast("Invalid email or password.");
-                    break;
-
-                case "OAuthSignin":
-                    errorToast("OAuth Sign-in failed. Try again.");
-                    break;
-
-                case "OAuthAccountNotLinked":
-                    errorToast("Account exists with a different sign-in method.");
-                    break;
-
-                case "AccessDenied":
-                    errorToast("Access denied. Contact support.");
-                    break;
-
-                case "Configuration":
-                    errorToast("Auth configuration error. Try later.");
-                    break;
-
-                case "Callback":
-                    errorToast("Authentication callback failed.");
-                    break;
-
-                default:
-                    errorToast("Unexpected error. Please try again.");
-                    break;
-            }
-
         } catch (error: any) {
             console.error("[AuthContext] signIn() exception:", error);
             errorToast("Something went wrong. Please try again.");
@@ -99,9 +79,10 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const signOut = async (options?: SignOutParams) => {
         try {
-            await NextAuthSignOut(options);
+            await NextAuthSignOut({ ...options, callbackUrl: "/signin" });
             console.log("[AuthContext] signOut(): User signed out.");
             successToast("Signed out successfully.");
+
         } catch (error: any) {
             console.error("[AuthContext] signOut() error:", error);
             errorToast("Error signing out. Please try again.");
@@ -110,13 +91,13 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     return (
         <AuthContext.Provider value={{
-            user: session,
+            session,
             signIn,
             signOut,
             status
         }}
         >
-                {children}
+            {children}
         </AuthContext.Provider>
     )
 }

@@ -1,19 +1,44 @@
-import { FC } from "react";
+"use client"
 
-const MobileActions: FC = () => (
-  <div className="mt-8 pt-8 border-t border-gray-200 space-y-4">
-    <button className="w-full px-6 py-3 rounded-full bg-gradient-to-r from-[#00A575] to-[#34C56A] text-white font-medium hover:shadow-lg transition-shadow">
-      List Your Court
-    </button>
-    <div className="flex gap-4">
-      <button className="flex-1 px-4 py-3 rounded-lg border border-gray-300 text-gray-700 font-medium hover:border-[#00A575] hover:text-[#00A575] transition-colors">
-        Login
-      </button>
-      <button className="flex-1 px-4 py-3 rounded-lg bg-gray-900 text-white font-medium hover:bg-gray-800 transition-colors">
-        Register
-      </button>
+import { FC } from "react";
+import { Button } from "@/components/ui/button";
+import { useAuth } from "@/context/AuthContext";
+import Link from "next/link";
+
+const MobileActions: FC = () => {
+  const { session, signOut } = useAuth();
+
+  if (session?.user) {
+    return (
+      <div className="mt-8 pt-8 border-t border-gray-200 space-y-4">
+        <Button
+          variant="outline"
+          className="w-full text-gray-700"
+          onClick={() => signOut()}
+        >
+          Logout
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mt-8 pt-8 border-t border-gray-200 space-y-4">
+      <div className="flex gap-4">
+        <Link href={'/signin'} className="w-full">
+          <Button variant="outline" className="w-full">
+            Login
+          </Button>
+        </Link>
+        <Link href={'/signup'} className="w-full">
+
+          <Button className=" bg-foreground w-full text-background hover:bg-gray-800">
+            Register
+          </Button>
+        </Link>
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 export default MobileActions;

@@ -25,11 +25,11 @@ export default function Hero() {
       <div className="absolute top-32 -right-40 h-[400px] w-[400px] rounded-full bg-white/10 blur-[120px] animate-blob2" />
 
       {/* Subtle Grid Pattern */}
-      <div className="absolute inset-0 bg-grid-white/[0.02] bg-[size:40px_40px]" />
+      <div className="absolute inset-0 bg-grid-white/[0.02] bg-size-[40px_40px]" />
 
       {/* Container */}
       <ContainerLayout className="relative z-10">
-        <div className="grid lg:grid-cols-2 gap-10 md:gap-16 items-center">
+        <div className="grid lg:grid-cols-2 gap-10 md:gap-16 items-center py-10">
 
           {/* LEFT CONTENT */}
           <div className="text-left animate-fade-slide-left">
@@ -162,12 +162,7 @@ export default function Hero() {
         </div>
       </ContainerLayout>
       
-      {/* Scroll Indicator */}
-      <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 animate-bounce">
-        <div className="w-6 h-10 border-2 border-white/50 rounded-full flex justify-center">
-          <div className="w-1 h-3 bg-white rounded-full mt-2 animate-scroll" />
-        </div>
-      </div>
+    
 
       {/* Custom Animations */}
       <style jsx>{`

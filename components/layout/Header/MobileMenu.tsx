@@ -1,31 +1,32 @@
+"use client"
+
+import { FC, Dispatch, SetStateAction } from "react";
+import { Drawer, DrawerContent, DrawerOverlay } from "@/components/ui/drawer";
 import MobileMenuHeader from "./MobileMenuHeader";
 import MobileUserInfo from "./MobileUserInfo";
 import MobileNavLinks from "./MobileNavLinks";
 import MobileActions from "./MobileActions";
 import MobileContactInfo from "./MobileContactInfo";
-import { Dispatch, FC, SetStateAction } from "react";
 
 type Props = {
-    isOpen: boolean;
-    setIsOpen: Dispatch<SetStateAction<boolean>>
-}
+  isOpen: boolean;
+  setIsOpen: Dispatch<SetStateAction<boolean>>;
+};
 
-const MobileMenu:FC<Props> = ({ isOpen, setIsOpen }) => {
+const MobileMenu: FC<Props> = ({ isOpen, setIsOpen }) => {
   return (
-    <div className={`lg:hidden fixed inset-0 z-50 transform transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
-      <div className="absolute inset-0 bg-black/50" onClick={() => setIsOpen(false)} />
-      <div className="absolute right-0 top-0 h-full w-80 bg-white shadow-2xl">
+    <Drawer open={isOpen} onOpenChange={setIsOpen} direction="left" >
+      <DrawerOverlay className="bg-black/50" />
+      <DrawerContent className="w-80 h-full bg-white shadow-2xl">
         <MobileMenuHeader setIsOpen={setIsOpen} />
-        <div className="h-[calc(100vh-80px)] overflow-y-auto">
-          <div className="p-6">
-            <MobileUserInfo />
-            <MobileNavLinks setIsOpen={setIsOpen} />
-            <MobileActions />
-            <MobileContactInfo />
-          </div>
+        <div className="p-6 space-y-6 overflow-y-auto h-full">
+          <MobileUserInfo />
+          <MobileNavLinks setIsOpen={setIsOpen} />
+          <MobileActions />
+          <MobileContactInfo />
         </div>
-      </div>
-    </div>
+      </DrawerContent>
+    </Drawer>
   );
 };
 
