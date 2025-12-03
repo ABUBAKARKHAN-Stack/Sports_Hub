@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import React from 'react'
 import { Separator } from '../ui/separator';
+import GoogleSignInButton from './GoogleSignInButton';
 
 
 const AuthFormFooter = ({ type = "signin", }) => {
@@ -12,9 +13,7 @@ const AuthFormFooter = ({ type = "signin", }) => {
                 <Separator orientation='horizontal' />
             </div>
 
-            <div className='flex justify-center gap-4 mt-2'>
-                <button className='border px-4 py-2 rounded'>Google</button>
-            </div>
+            <GoogleSignInButton />
 
             {type === "signin" ? (
                 <p className='text-center text-base mt-4'>

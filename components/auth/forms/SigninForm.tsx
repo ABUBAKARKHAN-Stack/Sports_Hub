@@ -22,6 +22,7 @@ import {
 import { CircleArrowRight, Eye, EyeOff } from "lucide-react"
 import { useToasts } from '@/hooks/toastNotifications'
 import { Spinner } from "@/components/ui/spinner"
+import { useAuth } from "@/context/AuthContext"
 
 const SigninForm = () => {
 
@@ -33,7 +34,12 @@ const SigninForm = () => {
         },
     })
 
-    const { successToast, errorToast } = useToasts()
+    const {
+        signIn,
+        user
+    } = useAuth()
+
+    
 
 
     const [showPassword, setShowPassword] = useState({
@@ -48,21 +54,10 @@ const SigninForm = () => {
     }
 
     async function onSubmit(data: z.infer<typeof signinSchema>) {
-
-
-        // try {
-        //     const response = await axiosInstance.post("/auth/register", payload)
-
-        //     if (response.status === 201) {
-        //         successToast(response.data.message)
-        //         form.reset()
-        //         setSignupAs(UserRoles.USER)
-        //     }
-        // } catch (error: any) {
-        //     const errMsg = error?.response?.data?.message || "Something went wrong while creating user"
-        //     errorToast(errMsg)
-        // }
-
+        await signIn("credentials", {
+            email: data.email,
+            password: data.password
+        })
     }
 
     return (
