@@ -5,6 +5,7 @@ import { IUser } from "@/types/main.types";
 import { userSchema } from "@/schemas/user.schema";
 import { ApiError } from "@/utils/ApiError";
 import { ApiResponse } from "@/utils/ApiResponse";
+import bcrypt from "bcryptjs";
 
 export const POST = async (request: NextRequest) => {
     await connectDb();
@@ -13,15 +14,18 @@ export const POST = async (request: NextRequest) => {
         //* Extract Request body
         const userBody: IUser = await request.json();
 
-        
-
         //* Sanitize and validate userBody
         const sanitizedBody = userSchema.parse(userBody);
 
-                console.log(sanitizedBody);
+        //* Hash Pasword
+        const hashedPassword = await bcrypt.hash(sanitizedBody.password,10)
+
 
         //* Create user 
-        const user = await userModel.create({ ...sanitizedBody });
+        const user = await userModel.create({
+            ...sanitizedBody,
+            password: hashedPassword
+        });
 
         if (!user) {
             return NextResponse.json(
@@ -31,7 +35,7 @@ export const POST = async (request: NextRequest) => {
         }
 
         return NextResponse.json(
-            new ApiResponse(201, "User Created", { userId: user._id }),
+            new ApiResponse(201, "User Created Successfully!"),
             { status: 201 }
         );
     } catch (error: any) {
@@ -45,10 +49,10 @@ export const POST = async (request: NextRequest) => {
         }
 
         //! Handle MongoDB duplicate key error
-        if (error.code === 11000) {            
+        if (error.code === 11000) {
             const field = Object.keys(error.keyValue)[0];
             return NextResponse.json(
-                new ApiError(409, `User with this ${field} already exists.`),
+                new ApiError(409, `User with this "${field}" already exists.`),
                 { status: 409 }
             );
         }

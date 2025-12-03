@@ -48,8 +48,27 @@ const signupRoles = [
     },
 ] as const;
 
+const signInFields = [
+    {
+        name: 'email',
+        type: 'email',
+        label: 'Email',
+        placeholder: 'Enter your email',
+        icon: Mail
+    },
+    {
+        name: 'password',
+        type: 'password',
+        label: 'Password',
+        placeholder: 'Create a password',
+        icon: EyeOff
+
+    },
+] as const;
+
 
 export {
     signUpFields,
-    signupRoles
+    signupRoles,
+    signInFields
 }

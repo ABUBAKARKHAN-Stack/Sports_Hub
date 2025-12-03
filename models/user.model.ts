@@ -14,4 +14,5 @@ const UserSchema = new Schema<UserModelType>({
     isVerified: { type: Boolean, default: false },
 })
 
+
 export const userModel = (models?.User as Model<UserModelType, {}>) || model<UserModelType>("User", UserSchema)
