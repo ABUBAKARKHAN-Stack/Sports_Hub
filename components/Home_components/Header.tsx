@@ -25,15 +25,12 @@ const Header = () => {
       label: "Sports", 
       href: "/sports",
       submenu: [
-        { label: "Badminton", href: "/sports/badminton" },
+        { label: "Football", href: "/sports/football" },
         { label: "Tennis", href: "/sports/tennis" },
-        { label: "Basketball", href: "/sports/basketball" },
         { label: "Squash", href: "/sports/squash" },
         { label: "Cricket", href: "/sports/cricket" },
       ]
     },
-    { label: "Pages", href: "/pages" },
-    { label: "Blogs", href: "/blogs" },
     { label: "Contact", href: "/contact" },
   ];
 
