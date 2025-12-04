@@ -1,11 +1,11 @@
-"use client"
+"use client";
 
 import { toast } from "sonner";
 
+type ToastMessage = string;
+
 export const useToasts = () => {
-
-
-  const baseStyle = {
+  const baseStyle: React.CSSProperties = {
     minHeight: "30px",
     height: "auto",
     borderRadius: "8px",
@@ -20,7 +20,7 @@ export const useToasts = () => {
     wordBreak: "break-word",
   };
 
-  const successToast = (message) => {
+  const successToast = (message: ToastMessage) => {
     toast.success(message, {
       style: {
         ...baseStyle,
@@ -29,11 +29,11 @@ export const useToasts = () => {
         border: "1px solid #16A34A",
       },
       duration: 2000,
-      position: "top-center",
+      position: "top-center" ,
     });
   };
 
-  const errorToast = (message) => {
+  const errorToast = (message: ToastMessage) => {
     toast.error(message, {
       style: {
         ...baseStyle,
@@ -42,11 +42,11 @@ export const useToasts = () => {
         border: "1px solid #FEDAD9",
       },
       duration: 2000,
-      position: "top-center",
+      position: "top-center" ,
     });
   };
 
-  const infoToast = (message) => {
+  const infoToast = (message: ToastMessage) => {
     toast.info(message, {
       style: {
         ...baseStyle,
@@ -55,7 +55,7 @@ export const useToasts = () => {
         border: "1px solid #A0AEC0",
       },
       duration: 2000,
-      position: "top-center",
+      position: "top-center" ,
     });
   };
 

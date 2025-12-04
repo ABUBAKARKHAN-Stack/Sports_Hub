@@ -12,8 +12,8 @@ const GoogleSignInButton = () => {
 
     return (
         <div className='flex justify-center gap-4 mt-2 w-1/2 mx-auto'>
-            <Button type='button' onClick={async () => await signIn("google")} className='text-foreground rounded-full  cursor-pointer hover:text-foreground w-full' variant={"outline"}>
-                <GoogleIllustration className='size-5.5' /> <span className='inline-block text-base'>Google</span>
+            <Button type='button' onClick={async () => await signIn("google")} className='text-foreground text-sm rounded-full cursor-pointer hover:text-foreground w-full' variant={"outline"}>
+                <GoogleIllustration className='size-5' /> <span className='inline-block text-base'>Google</span>
             </Button>
         </div>
     )

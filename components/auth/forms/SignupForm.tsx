@@ -31,6 +31,7 @@ import axiosInstance from "@/lib/axios"
 import { useToasts } from '@/hooks/toastNotifications'
 import { Spinner } from "@/components/ui/spinner"
 import { useRouter } from "next/navigation"
+import AuthButton from "../AuthButton"
 
 const SignupForm = () => {
 
@@ -190,20 +191,11 @@ const SignupForm = () => {
                         />
                     ))}
                 </FieldGroup>
-
-                <Button
-                    type="submit"
-                    disabled={form.formState.isSubmitting}
-                    className="bg-foreground disabled:opacity-50 h-11 text-background hover:bg-[#131b2a]"
-                    size={"lg"}
-                >
-                    {
-                        form.formState.isSubmitting ? <>
-                            <Spinner /> Creating Account
-                        </> : "Create Account"
-                    }
-                    <CircleArrowRight />
-                </Button>
+                <AuthButton
+                    isSubmitting={form.formState.isSubmitting}
+                    btnText="Create Account"
+                    loadingText="Creating Account"
+                />
             </form>
         </>
     )

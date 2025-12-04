@@ -3,11 +3,9 @@ import AuthFormFooter from '@/components/auth/AuthFormFooter'
 import AuthFormHeader from '@/components/auth/AuthFormHeader'
 import AuthImageBanner from '@/components/auth/AuthImageBanner'
 import SigninForm from '@/components/auth/forms/SigninForm'
-import SignupForm from '@/components/auth/forms/SignupForm'
 import ContainerLayout from '@/components/layout/ContainerLayout'
-import React from 'react'
 
-const page = () => {
+const SignInPage = () => {
   return (
      <main className='min-h-screen flex items-center justify-center'>
             <ContainerLayout>
@@ -39,4 +37,4 @@ const page = () => {
   )
 }
 
-export default page
+export default SignInPage

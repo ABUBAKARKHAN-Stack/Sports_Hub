@@ -41,9 +41,27 @@ const signupSchema = baseSchema.extend({
 
 const signinSchema = baseSchema;
 
+const forgotPasswordSchema = z.object({
+    email: z
+        .email("Please enter a valid email address"),
+})
+
+const resetPasswordSchema = z.object({
+    password: strongPassword,
+
+    confirmPassword: z
+        .string()
+        .trim()
+        .min(1, "Confirm Password is required ")
+}).refine((data) => data.password === data.confirmPassword, {
+    error: "Passwords do not match",
+    path: ["confirmPassword"]
+})
 
 
 export {
     signupSchema,
-    signinSchema
+    signinSchema,
+    forgotPasswordSchema,
+    resetPasswordSchema
 }

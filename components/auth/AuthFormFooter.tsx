@@ -5,6 +5,20 @@ import GoogleSignInButton from './GoogleSignInButton';
 
 
 const AuthFormFooter = ({ type = "signin", }) => {
+
+    if (type === "forgot-password") {
+        return <p className='text-center text-sm mt-4'>
+            Remember Password?{' '}
+            <Link
+                className='text-primary font-medium cursor-pointer'
+                href={"/signup"}
+            >
+                Sign In!
+            </Link>
+        </p>
+    }
+
+
     return (
         <>
             <div className='text-center text-sm mt-6 w-3/4 mx-auto grid grid-cols-3 place-items-center'>
@@ -16,7 +30,7 @@ const AuthFormFooter = ({ type = "signin", }) => {
             <GoogleSignInButton />
 
             {type === "signin" ? (
-                <p className='text-center text-base mt-4'>
+                <p className='text-center text-sm mt-4'>
                     Don’t have an account?{' '}
                     <Link
                         className='text-primary font-medium cursor-pointer'
@@ -26,7 +40,7 @@ const AuthFormFooter = ({ type = "signin", }) => {
                     </Link>
                 </p>
             ) : (
-                <p className='text-center text-base mt-4'>
+                <p className='text-center text-sm mt-4'>
                     Have an account?{' '}
                     <Link
                         className='text-primary font-medium cursor-pointer'

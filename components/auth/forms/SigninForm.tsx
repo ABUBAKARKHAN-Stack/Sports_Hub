@@ -23,6 +23,8 @@ import { CircleArrowRight, Eye, EyeOff } from "lucide-react"
 import { Spinner } from "@/components/ui/spinner"
 import { useAuth } from "@/context/AuthContext"
 import { useAuthErrors } from "@/hooks/useAuthErrors"
+import Link from "next/link"
+import AuthButton from "../AuthButton"
 
 const SigninForm = () => {
 
@@ -111,19 +113,13 @@ const SigninForm = () => {
                     ))}
                 </FieldGroup>
 
-                <Button
-                    type="submit"
-                    disabled={form.formState.isSubmitting}
-                    className="bg-foreground disabled:opacity-50 h-11 text-background hover:bg-[#131b2a]"
-                    size={"lg"}
-                >
-                    {
-                        form.formState.isSubmitting ? <>
-                            <Spinner /> Signing In
-                        </> : "Sign In"
-                    }
-                    <CircleArrowRight />
-                </Button>
+                <Link href={"/forgot-password"} className="text-end w-full hover:underline text-xs font-medium text-destructive">Forgot Password</Link>
+
+                  <AuthButton
+                    isSubmitting={form.formState.isSubmitting}
+                    btnText="Sign In"
+                    loadingText="Signing In"
+                />
             </form>
         </>
     )
