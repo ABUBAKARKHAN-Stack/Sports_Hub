@@ -11,10 +11,14 @@ interface Props {
 }
 
 export default function RootProvider({ children, session }: Props) {
+
+
     return (
         <SessionProvider session={session}>
             <Toaster duration={2000} position="top-center" />
-            <AuthProvider>{children}</AuthProvider>
+            <AuthProvider>
+                {children}
+            </AuthProvider>
         </SessionProvider>
     );
 }

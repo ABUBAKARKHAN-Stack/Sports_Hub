@@ -109,15 +109,17 @@ export const authOptions: NextAuthOptions = {
         },
 
         //* Session callback
-        async session({ session, token }) {
+        async session({ session, token, }) {
+            const user = await userModel.findById(token.userId)
+            
             if (session.user) {
-                session.user.id = token.userId as string;
-                session.user.username = token.username as string;
-                session.user.email = session.user.email || "";
-                session.user.avatar = token.avatar as string;
-                session.user.role = token.role as UserRoles;
-                session.user.isVerified = token.isVerified as boolean;
-                session.user.provider = token.provider as AuthProviderEnum;
+                session.user.id = user?._id.toString() as string;
+                session.user.username = user?.username as string;
+                session.user.email = user?.email || "";
+                session.user.avatar = user?.avatar as string;
+                session.user.role = user?.role as UserRoles;
+                session.user.isVerified = user?.isVerified as boolean;
+                session.user.provider = user?.provider as AuthProviderEnum;
             }
             return session;
         },

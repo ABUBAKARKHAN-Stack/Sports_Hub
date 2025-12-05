@@ -1,14 +1,14 @@
-interface EmailTemplateProps {
-  token: string;
+import { brandName } from '@/constants/main.constants';
+
+interface AccountVerificationProps {
+  code: string;
   username?: string;
 }
 
-export function ForgotPasswordEmailTemplate({
-  token,
+export const AccountVerificationTemplate = ({
+  code,
   username = "User",
-}: EmailTemplateProps) {
-  const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${token}`;
-
+}: AccountVerificationProps) => {
   return (
     <div
       style={{
@@ -23,30 +23,32 @@ export function ForgotPasswordEmailTemplate({
     >
       <h2 style={{ color: "#333" }}>Hello {username},</h2>
       <p style={{ color: "#555", fontSize: "16px", lineHeight: "1.5" }}>
-        We received a request to reset the password for your account.
+        Thank you for creating an account with us. Please use the verification code below to activate your account.
       </p>
-      <p style={{ color: "#555", fontSize: "16px", lineHeight: "1.5" }}>
-        Click the button below to reset your password. This link will expire in 1 hour.
-      </p>
-      <a
-        href={resetUrl}
+      <p
         style={{
           display: "inline-block",
           padding: "12px 24px",
           margin: "20px 0",
-          backgroundColor: "#4f46e5",
+          backgroundColor: "green",
           color: "#fff",
-          textDecoration: "none",
           borderRadius: "6px",
           fontWeight: "bold",
+          fontSize: "20px",
+          letterSpacing: "4px",
         }}
       >
-        Reset Password
-      </a>
-      <p style={{ color: "#888", fontSize: "14px" }}>
-        If you did not request a password reset, please ignore this email.
+        {code}
       </p>
-      <p style={{ color: "#888", fontSize: "14px" }}>— The Team</p>
+      <p style={{ color: "#888", fontSize: "14px" }}>
+        This code will expire in 10 minutes.
+      </p>
+      <p style={{ color: "#888", fontSize: "14px" }}>
+        If you did not create this account, please ignore this email.
+      </p>
+      <p style={{ color: "#888", fontSize: "14px" }}>{brandName} - The Team</p>
     </div>
   );
-}
+};
+
+ AccountVerificationTemplate;

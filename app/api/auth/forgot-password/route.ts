@@ -1,5 +1,4 @@
-import { ForgotPasswordEmailTemplate } from "@/components/email_templates/ForgotPasswordEmailTemplate";
-import { brandName } from "@/constants/main.constants";
+import { ForgotPasswordTemplate } from "@/emails/ForgotPasswordTemplate";
 import { connectDb } from "@/lib/dbConnect";
 import { generateToken } from "@/lib/generateToken";
 import { resendClient } from "@/lib/resend";
@@ -14,8 +13,6 @@ export const POST = async (request: NextRequest) => {
 
     try {
         const { email } = await request.json();
-
-        console.log(email);
         
 
         if (!email) {
@@ -44,7 +41,7 @@ export const POST = async (request: NextRequest) => {
             from: 'onboarding@resend.dev',
             to: 'official.codescription@gmail.com',
             subject: "Reset Your Password",
-            react: ForgotPasswordEmailTemplate({ token, username: user.username })
+            react: ForgotPasswordTemplate({ token, username: user.username })
         });
 
         if (error) {

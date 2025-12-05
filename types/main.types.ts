@@ -41,7 +41,6 @@ export {
     AuthProviderEnum
 }
 
-// types.ts
 export interface Host {
   id: string;
   name: string;

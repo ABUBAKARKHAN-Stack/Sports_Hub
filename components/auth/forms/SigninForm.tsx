@@ -5,7 +5,6 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm, Controller } from "react-hook-form"
 import z from "zod"
 import { useState } from "react"
-import { Button } from "@/components/ui/button"
 import {
     Field,
     FieldError,
@@ -19,10 +18,9 @@ import {
     InputGroupButton,
     InputGroupInput,
 } from "@/components/ui/input-group"
-import { CircleArrowRight, Eye, EyeOff } from "lucide-react"
-import { Spinner } from "@/components/ui/spinner"
+import { Eye, EyeOff } from "lucide-react"
+
 import { useAuth } from "@/context/AuthContext"
-import { useAuthErrors } from "@/hooks/useAuthErrors"
 import Link from "next/link"
 import AuthButton from "../AuthButton"
 

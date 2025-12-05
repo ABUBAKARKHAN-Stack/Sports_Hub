@@ -39,6 +39,7 @@ const signupSchema = baseSchema.extend({
 
 
 
+
 const signinSchema = baseSchema;
 
 const forgotPasswordSchema = z.object({
@@ -58,10 +59,18 @@ const resetPasswordSchema = z.object({
     path: ["confirmPassword"]
 })
 
+const accountVerificationSchema = z.object({
+    code: z
+      .string()
+      .min(6, "Code must be 6 digits")
+      .max(6, "Code must be 6 digits"),
+  });
+
 
 export {
     signupSchema,
     signinSchema,
     forgotPasswordSchema,
-    resetPasswordSchema
+    resetPasswordSchema,
+    accountVerificationSchema
 }

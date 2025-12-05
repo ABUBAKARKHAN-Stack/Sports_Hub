@@ -1,6 +1,6 @@
 "use client"
 
-import { createContext, ReactNode, useContext } from "react";
+import { createContext, Dispatch, ReactNode, SetStateAction, useContext, useEffect } from "react";
 import {
     SignInOptions,
     SignOutParams,
@@ -16,12 +16,18 @@ import { useRouter } from "next/navigation";
 import axiosInstance from "@/lib/axios";
 import { UseFormReturn } from "react-hook-form";
 import z from "zod";
-import { forgotPasswordSchema, resetPasswordSchema } from "@/schemas/auth.schema";
+import { accountVerificationSchema, forgotPasswordSchema, resetPasswordSchema } from "@/schemas/auth.schema";
 
 type ResetPasswordType = {
     token: string,
     newPassword: string,
     form: UseFormReturn<z.infer<typeof resetPasswordSchema>>
+}
+
+type VerifyAccountType = {
+    code: string,
+    form: UseFormReturn<z.infer<typeof accountVerificationSchema>>;
+    setIsOpen: Dispatch<SetStateAction<boolean>>;
 }
 
 type AuthContextType = {
@@ -34,19 +40,28 @@ type AuthContextType = {
         form,
         newPassword,
         token
-    }: ResetPasswordType) => Promise<void>
+    }: ResetPasswordType) => Promise<void>;
+    sendVerificationEmail: (setCodeSent: Dispatch<SetStateAction<boolean>>) => Promise<void>;
+    verifyAccount: ({ code, form }: VerifyAccountType) => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType | null>(null)
 
 const AuthProvider = ({ children }: { children: ReactNode }) => {
-    const { data: session, status } = useSession()
+    const { data: session, status, update } = useSession()
     const {
         successToast,
         errorToast,
     } = useToasts()
 
     const router = useRouter()
+
+    // useEffect(() => {
+    //     console.log(session,"new sesion");
+        
+
+
+    // },[session])
 
 
 
@@ -60,11 +75,12 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
                 const resp = await NextAuthSignIn(provider, { ...options, redirect: false }, authorizationParams);
 
                 if (resp?.ok && !resp.error) {
-                    successToast("Signed in successfully!");
-
+                    successToast("Signed in successfully!");                    
                     if (session?.user.role === UserRoles.SUPER_ADMIN) {
                         router.push('/super_admin/dashboard')
                     } else if (session?.user.role === UserRoles.ADMIN) {
+                        console.log('hey');
+
                         router.push('/admin/dashboard')
                     } else {
                         router.push('/')
@@ -146,6 +162,40 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
     };
 
+    const sendVerificationEmail = async (setCodeSent: Dispatch<SetStateAction<boolean>>) => {
+        try {
+            const response = await axiosInstance.get('/auth/account-verification/send')
+            if (response.status === 200) {
+                successToast("Verification code sent! Check your email.");
+                setCodeSent(true)
+            }
+
+        } catch (error: any) {
+            const errMsg = error?.response?.data?.message
+                || "Failed to  Account Verificaton email. Please try again with a valid link or request a new one.";
+            errorToast(errMsg);
+        }
+    }
+
+    const verifyAccount = async ({ code, form, setIsOpen }: VerifyAccountType) => {
+        try {
+            const response = await axiosInstance.post('/auth/account-verification/verify-otp', { code });
+            if (response.status === 200) {
+                console.log('EY');
+
+                form.reset();
+                successToast(response.data.message);
+                setIsOpen(false)
+                await update()
+
+            }
+        } catch (error: any) {
+            const errMsg = error?.response?.data?.message
+                || "Failed to verify your account. Please try again with a valid code or request a new one.";
+            errorToast(errMsg);
+        }
+    }
+
 
     return (
         <AuthContext.Provider value={{
@@ -154,7 +204,9 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
             signOut,
             forgotPassword,
             resetPassword,
-            status
+            status,
+            sendVerificationEmail,
+            verifyAccount
         }}
         >
             {children}
