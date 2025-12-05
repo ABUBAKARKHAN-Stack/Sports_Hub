@@ -191,9 +191,9 @@ const Footer = () => {
 
         {/* App & Social */}
         <div className="border-t border-white/20 pt-6 sm:pt-8 mb-6 sm:mb-8">
-          <div className="flex flex-col lg:flex-row justify-between items-center gap-6">
+          <div className="flex flex-col lg:flex-row justify-center items-center gap-6">
             {/* App Downloads */}
-            <div className="w-full lg:w-auto">
+            {/* <div className="w-full lg:w-auto">
               <h4 className="text-base sm:text-lg font-bold mb-3 sm:mb-4 text-center lg:text-left">
                 Play On The Go
               </h4>
@@ -226,10 +226,10 @@ const Footer = () => {
                   <Download className="h-4 w-4 ml-auto sm:ml-4 group-hover:translate-y-0.5 transition-transform" />
                 </button>
               </div>
-            </div>
+            </div> */}
             
             {/* Social Media */}
-            <div className="text-center lg:text-right">
+            <div className="text-center">
               <h4 className="text-base sm:text-lg font-bold mb-3 sm:mb-4">
                 Connect With Us
               </h4>
@@ -314,7 +314,7 @@ const Footer = () => {
             </div>
             
             {/* Language & Currency */}
-            <div className="flex items-center gap-4 sm:gap-6">
+            {/* <div className="flex items-center gap-4 sm:gap-6">
               <div className="flex items-center gap-2">
                 <Globe className="h-3 w-3 sm:h-4 sm:w-4 text-white/70" />
                 <select
@@ -342,7 +342,7 @@ const Footer = () => {
                   <option value="INR">INR</option>
                 </select>
               </div>
-            </div>
+            </div> */}
             
             {/* Policies */}
             <div className="flex flex-wrap justify-center gap-3 sm:gap-4 text-xs sm:text-sm text-white/70">

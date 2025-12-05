@@ -147,7 +147,7 @@ export default function Hero() {
                 <div className="absolute -inset-4 bg-gradient-to-r from-[#C6FF56] via-[#00A575] to-[#34C56A] rounded-full blur-xl opacity-30 animate-pulse-slow" />
                 <div className="relative w-full h-full">
                   <Image
-                    src="/images/badminton-rackets.jpg"
+                    src="/assets/imgs/badminton-rackets.png"
                     alt="Badminton rackets on court"
                     fill
                     priority
