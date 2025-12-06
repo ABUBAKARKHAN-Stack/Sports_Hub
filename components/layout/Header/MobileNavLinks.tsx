@@ -1,16 +1,18 @@
-"use client"
+// components/layout/MobileNavLinks.tsx
+"use client";
 
 import { FC, Dispatch, SetStateAction } from "react";
 import Link from "next/link";
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
-import { navLinks } from "@/constants/main.constants";
 import { usePathname } from "next/navigation";
+import { NavLink } from "@/hooks/useRoleNavigation";
 
 interface MobileNavLinksProps {
   setIsOpen: Dispatch<SetStateAction<boolean>>;
+  navLinks: NavLink[];
 }
 
-const MobileNavLinks: FC<MobileNavLinksProps> = ({ setIsOpen }) => {
+const MobileNavLinks: FC<MobileNavLinksProps> = ({ setIsOpen, navLinks }) => {
   const pathname = usePathname();
   const isActive = (href: string) => (href === "/" ? pathname === "/" : pathname.startsWith(href));
 

@@ -5,7 +5,7 @@ export default withAuth(
     function middleware(req) {
         const role = req.nextauth.token?.role;
         const pathname = req.nextUrl.pathname;
-        
+
         const authPages = [
             "/signin",
             "/signup",
@@ -17,18 +17,15 @@ export default withAuth(
             return Response.redirect(new URL("/", req.url));
         }
 
-        if (!role) {
-            return Response.redirect(new URL("/signin", req.url));
-        }
-
+     
         if (role === UserRoles.USER) {
-            if (pathname.startsWith("/admin") || pathname.startsWith("/super_admin")) {
+            if (pathname.startsWith("/admin") || pathname.startsWith("/super-admin")) {
                 return Response.redirect(new URL("/", req.url));
             }
         }
 
         if (role === UserRoles.ADMIN) {
-            if (pathname.startsWith("/super_admin")) {
+            if (pathname.startsWith("/super-admin")) {
                 return Response.redirect(new URL("/", req.url));
             }
         }
@@ -52,7 +49,7 @@ export default withAuth(
 export const config = {
     matcher: [
         "/admin/:path*",
-        "/super_admin/:path*",
+        "/super-admin/:path*",
         "/signin",
         "/signup",
         "/forgot-password",

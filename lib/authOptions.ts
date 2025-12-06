@@ -110,6 +110,7 @@ export const authOptions: NextAuthOptions = {
 
         //* Session callback
         async session({ session, token, }) {
+            await connectDb()
             const user = await userModel.findById(token.userId)
             
             if (session.user) {
@@ -140,6 +141,8 @@ export const authOptions: NextAuthOptions = {
 
             return true;
         },
+
+
     },
 
     pages: {

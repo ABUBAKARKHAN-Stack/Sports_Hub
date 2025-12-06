@@ -13,7 +13,7 @@ const UserSchema = new Schema<UserModelType>({
     avatar: { type: String, default: null },
     isVerified: { type: Boolean, default: false },
     provider: {type:String, enum: Object.values(AuthProviderEnum),default: AuthProviderEnum.CREDENTIALS}
-})
+},{timestamps:true})
 
 
 export const userModel = (models?.User as Model<UserModelType, {}>) || model<UserModelType>("User", UserSchema)

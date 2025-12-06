@@ -1,4 +1,5 @@
-import { Document } from "mongoose"
+import { Types } from 'mongoose';
+
 
 type DatabaseConnectionObject = {
     isConntected?: number
@@ -15,11 +16,8 @@ enum AuthProviderEnum {
     GOOGLE = "GOOGLE"
 }
 
-interface IBooking { }
-interface IPayment { }
-interface IReview { }
 
-interface IUser  {
+interface IUser {
     username: string;
     email: string;
     password: string;
@@ -41,73 +39,215 @@ export {
     AuthProviderEnum
 }
 
-export interface Host {
-  id: string;
-  name: string;
-  avatar: string;
-  verified: boolean;
+
+export enum FacilityStatusEnum {
+    PENDING = 'pending',
+    APPROVED = 'approved',
+    REJECTED = 'rejected',
+    SUSPENDED = 'suspended'
 }
 
-export interface Venue {
-  id: number;
-  name: string;
-  price: string;
-  duration: string;
-  rating: number;
-  reviews: number;
-  address: string;
-  availability: string;
-  distance: string;
-  host: Host;
-  features: string[];
-  popular?: boolean;
-  trending?: boolean;
-  new?: boolean;
-  category: string;
-  instantBook?: boolean;
+//* Facility Types
+export interface IFacility {
+    _id: Types.ObjectId;
+    name: string;
+    description?: string;
+    adminId: Types.ObjectId;
+    location: {
+        address?: string;
+        city?: string;
+        coordinates?: {
+            lat: number;
+            lng: number;
+        };
+    };
+    contact: {
+        phone?: string;
+        email?: string;
+    };
+    openingHours: {
+        day: 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday' | 'Sunday';
+        openingTime: string;
+        closingTime: string;
+        isClosed: boolean;
+    }[];
+    services: Types.ObjectId[];
+    status: FacilityStatusEnum;
+    images: string[];
+    documents: {
+        type: string;
+        url: string;
+    }[];
+    createdAt: Date;
+    updatedAt: Date;
 }
 
-export const AMENITIES = [
-  { label: "AC Courts", icon: "Wind" },
-  { label: "Free Parking", icon: "Car" },
-  { label: "Showers", icon: "Waves" },
-  { label: "Equipment", icon: "Dumbbell" },
-  { label: "Cafe", icon: "Coffee" },
-  { label: "Coaching", icon: "Users" },
-  { label: "Gym", icon: "Dumbbell" },
-  { label: "Pro Shop", icon: "ShoppingBag" },
-  { label: "Wi-Fi", icon: "Wifi" },
-  { label: "Lockers", icon: "Lock" },
-] as const;
+//* Service Types
+export interface IService {
+    _id: Types.ObjectId;
+    title: string;
+    description?: string;
+    facilityId: Types.ObjectId;
+    price: number;
+    duration: number;
+    capacity: number;
+    category?: string;
+    isActive: boolean;
+    images: string[];
+    createdAt: Date;
+    updatedAt: Date;
+}
 
-export const CATEGORIES = [
-  { label: "All Courts", value: "all" },
-  { label: "Premium", value: "premium", count: 2 },
-  { label: "Luxury", value: "luxury", count: 2 },
-  { label: "Standard", value: "standard", count: 1 },
-  { label: "Community", value: "community", count: 1 },
-] as const;
+export enum BookingStatusEnum {
+  PENDING = 'pending',
+  CONFIRMED = 'confirmed',
+  CANCELLED = 'cancelled',
+  COMPLETED = 'completed'
+}
 
-export const PRICE_RANGES = [
-  { label: "Any Price", value: "any" },
-  { label: "Under $25", value: "under25" },
-  { label: "$25 - $35", value: "25-35" },
-  { label: "$35+", value: "35plus" },
-] as const;
 
-export const AVAILABILITY_OPTIONS = [
-  { label: "Any Time", value: "any" },
-  { label: "Morning (6AM - 12PM)", value: "morning" },
-  { label: "Afternoon (12PM - 6PM)", value: "afternoon" },
-  { label: "Evening (6PM - 12AM)", value: "evening" },
-  { label: "Instant Book", value: "instant" },
-] as const;
+export enum PaymentStatusEnum {
+  PENDING = 'pending',
+  COMPLETED = 'completed',
+  FAILED = 'failed',
+  REFUNDED = 'refunded',
+}
 
-export const SORT_OPTIONS = [
-  { label: "Recommended", value: "recommended", icon: "Sparkles" },
-  { label: "Rating: High to Low", value: "rating_desc", icon: "Star" },
-  { label: "Price: Low to High", value: "price_asc", icon: "DollarSign" },
-  { label: "Price: High to Low", value: "price_desc", icon: "DollarSign" },
-  { label: "Distance: Nearest", value: "distance_asc", icon: "Navigation" },
-] as const;
 
+//* Booking Types
+export interface IBooking {
+    _id: Types.ObjectId;
+    userId?: Types.ObjectId;
+    guestInfo?: {
+        name: string;
+        email: string;
+        phone: string;
+    };
+    serviceId: Types.ObjectId;
+    facilityId: Types.ObjectId;
+    slotId: Types.ObjectId;
+    bookingDate: Date;
+    participants: number;
+    totalAmount: number;
+    status: BookingStatusEnum;
+    paymentStatus: PaymentStatusEnum;
+    paymentId?: string;
+    transactionId?: string;
+    adminNotes?: string;
+    cancellationReason?: string;
+    createdAt: Date;
+    updatedAt: Date;
+}
+
+//* TimeSlot Types
+export interface ITimeSlot {
+    _id: Types.ObjectId;
+    facilityId: Types.ObjectId;
+    serviceId: Types.ObjectId;
+    date: Date;
+    startTime: string;
+    endTime: string;
+    isBooked: boolean;
+    maxCapacity?: number;
+    bookedCount: number;
+    isActive: boolean;
+}
+
+export enum ReviewStatusEnum {
+  PENDING = 'pending',
+  APPROVED = 'approved',
+  REJECTED = 'rejected'
+}
+
+
+//* Review Types
+export interface IReview {
+    _id: Types.ObjectId;
+    userId: Types.ObjectId;
+    facilityId?: Types.ObjectId;
+    serviceId?: Types.ObjectId;
+    rating: number;
+    comment?: string;
+    images: string[];
+    status: ReviewStatusEnum;
+    adminResponse?: {
+        response: string;
+        respondedAt: Date;
+        respondedBy: Types.ObjectId;
+    };
+    createdAt: Date;
+    updatedAt: Date;
+}
+
+export enum PaymentMethodEnum {
+  EASYPAISA = 'easypaisa',
+  JAZZCASH = 'jazzcash',
+  CASH = 'cash',
+}
+
+
+
+
+//* Payment Types
+export interface IPayment {
+    _id: Types.ObjectId;
+    bookingId: Types.ObjectId;
+    userId?: Types.ObjectId;
+    amount: number;
+    paymentMethod: PaymentMethodEnum;
+    transactionId: string;
+    status: PaymentStatusEnum;
+    paymentDetails?: {
+        accountNumber?: string;
+        accountTitle?: string;
+        mobileNumber?: string;
+    };
+    refundDetails?: {
+        amount: number;
+        reason: string;
+        refundedAt: Date;
+        refundTransactionId: string;
+    };
+    createdAt: Date;
+    updatedAt: Date;
+}
+
+//* Paginated Response Types
+export interface PaginatedResponse<T> {
+    data: T[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+}
+
+//* Request Types
+export interface CreateFacilityRequest {
+    name: string;
+    description?: string;
+    location: IFacility['location'];
+    contact: IFacility['contact'];
+    openingHours: IFacility['openingHours'];
+}
+
+
+export interface CreateServiceRequest {
+    title: string;
+    description?: string;
+    facilityId: string;
+    price: number;
+    duration: number;
+    capacity?: number;
+    category?: string;
+}
+
+export interface UpdateBookingRequest {
+    status?: IBooking['status'];
+    adminNotes?: string;
+    cancellationReason?: string;
+}
+
+export interface UpdateReviewRequest {
+    status: IReview['status'];
+    response?: string;
+}

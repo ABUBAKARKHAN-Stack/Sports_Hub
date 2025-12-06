@@ -4,7 +4,7 @@ import { signinSchema } from "@/schemas/auth.schema"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm, Controller } from "react-hook-form"
 import z from "zod"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import {
     Field,
     FieldError,
@@ -23,8 +23,12 @@ import { Eye, EyeOff } from "lucide-react"
 import { useAuth } from "@/context/AuthContext"
 import Link from "next/link"
 import AuthButton from "../AuthButton"
+import { UserRoles } from "@/types/main.types"
+import { useRouter } from "next/navigation"
 
 const SigninForm = () => {
+
+
 
     const form = useForm<z.infer<typeof signinSchema>>({
         resolver: zodResolver(signinSchema),
@@ -36,6 +40,7 @@ const SigninForm = () => {
 
     const {
         signIn,
+        session
     } = useAuth()
 
 
@@ -56,6 +61,23 @@ const SigninForm = () => {
             password: data.password
         })
     }
+
+    const router = useRouter()
+
+    useEffect(() => {
+
+        if (session) {
+            const role = session.user.role;
+            if (role === UserRoles.SUPER_ADMIN) {
+                router.push("/super-admin/")
+            } else if (role === UserRoles.ADMIN) {
+                router.push("/admin/")
+            } else {
+                router.push("/")
+            }
+        }
+
+    }, [session])
 
     return (
 
@@ -113,7 +135,7 @@ const SigninForm = () => {
 
                 <Link href={"/forgot-password"} className="text-end w-full hover:underline text-xs font-medium text-destructive">Forgot Password</Link>
 
-                  <AuthButton
+                <AuthButton
                     isSubmitting={form.formState.isSubmitting}
                     btnText="Sign In"
                     loadingText="Signing In"

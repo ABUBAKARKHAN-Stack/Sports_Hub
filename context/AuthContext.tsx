@@ -56,14 +56,6 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const router = useRouter()
 
-    // useEffect(() => {
-    //     console.log(session,"new sesion");
-        
-
-
-    // },[session])
-
-
 
     const signIn = async (
         provider?: string,
@@ -72,15 +64,13 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
     ) => {
         try {
             if (provider === "credentials") {
-                const resp = await NextAuthSignIn(provider, { ...options, redirect: false }, authorizationParams);
+                const resp = await NextAuthSignIn(provider, { ...options, redirect: false, }, authorizationParams);
 
                 if (resp?.ok && !resp.error) {
-                    successToast("Signed in successfully!");                    
+                    successToast("Signed in successfully!");
                     if (session?.user.role === UserRoles.SUPER_ADMIN) {
                         router.push('/super_admin/dashboard')
                     } else if (session?.user.role === UserRoles.ADMIN) {
-                        console.log('hey');
-
                         router.push('/admin/dashboard')
                     } else {
                         router.push('/')
