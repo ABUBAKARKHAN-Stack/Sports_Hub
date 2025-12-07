@@ -9,22 +9,19 @@ export interface NavLink {
 }
 
 export const useRoleNavigation = (userRole?: UserRoles) => {
-  //* Base navigation links for all roles
+  //* Base navigation links for ALL users (header navigation)
   const baseLinks: NavLink[] = [
     { 
       label: "Home", 
-      href: "/", 
-      roles: [UserRoles.USER, UserRoles.ADMIN, UserRoles.SUPER_ADMIN, undefined] 
+      href: "/"
     },
     { 
       label: "Courts", 
-      href: "/courts", 
-      roles: [UserRoles.USER, UserRoles.ADMIN, UserRoles.SUPER_ADMIN, undefined] 
+      href: "/courts"
     },
     {
       label: "Sports",
       href: "/sports",
-      roles: [UserRoles.USER, UserRoles.ADMIN, UserRoles.SUPER_ADMIN, undefined],
       submenu: [
         { label: "Badminton", href: "/sports/badminton" },
         { label: "Tennis", href: "/sports/tennis" },
@@ -35,121 +32,178 @@ export const useRoleNavigation = (userRole?: UserRoles) => {
     },
     { 
       label: "Blogs", 
-      href: "/blogs", 
-      roles: [UserRoles.USER, UserRoles.ADMIN, UserRoles.SUPER_ADMIN, undefined] 
+      href: "/blogs"
     },
     { 
       label: "Contact", 
-      href: "/contact", 
-      roles: [UserRoles.USER, UserRoles.ADMIN, UserRoles.SUPER_ADMIN, undefined] 
+      href: "/contact"
     },
   ];
 
-  //* Admin-only links
-  const adminLinks: NavLink[] = [
-    { 
-      label: "Dashboard", 
-      href: "/admin", 
-      roles: [UserRoles.ADMIN] 
-    },
-    { 
-      label: "Facilities", 
-      href: "/admin/facilities", 
-      roles: [UserRoles.ADMIN] 
-    },
-    { 
-      label: "Services", 
-      href: "/admin/services", 
-      roles: [UserRoles.ADMIN] 
-    },
-    { 
-      label: "Bookings", 
-      href: "/admin/bookings", 
-      roles: [UserRoles.ADMIN] 
-    },
-    { 
-      label: "Payments", 
-      href: "/admin/payments", 
-      roles: [UserRoles.ADMIN] 
-    },
-  ];
-
-  //* Super Admin-only links
-  const superAdminLinks: NavLink[] = [
-    { 
-      label: "Super Admin", 
-      href: "/super-admin", 
-      roles: [UserRoles.SUPER_ADMIN] 
-    },
-    { 
-      label: "Facilities", 
-      href: "/super-admin/facilities", 
-      roles: [UserRoles.SUPER_ADMIN] 
-    },
-    { 
-      label: "Admins", 
-      href: "/super-admin/admins", 
-      roles: [UserRoles.SUPER_ADMIN] 
-    },
-    { 
-      label: "Analytics", 
-      href: "/super-admin/analytics", 
-      roles: [UserRoles.SUPER_ADMIN] 
-    },
-  ];
-
-  //* User-only links (logged in regular users)
-  const userLinks: NavLink[] = [
+  //* Regular User links (will appear in header, not sidebar)
+  const regularUserLinks: NavLink[] = [
     { 
       label: "My Bookings", 
-      href: "/user/bookings", 
-      roles: [UserRoles.USER] 
+      href: "/bookings",
+      roles: [UserRoles.USER]
     },
     { 
       label: "Profile", 
-      href: "/user/profile", 
-      roles: [UserRoles.USER] 
+      href: "/profile",
+      roles: [UserRoles.USER]
     },
   ];
 
-  //* Combine all links and filter by role
-  const allLinks = [
-    ...baseLinks,
-    ...adminLinks,
-    ...superAdminLinks,
-    ...userLinks,
+  //* Manager/Admin-only links (for sidebar)
+  const managerLinks: NavLink[] = [
+    { 
+      label: "Dashboard", 
+      href: "/admin/dashboard",
+      roles: [UserRoles.ADMIN, UserRoles.SUPER_ADMIN]
+    },
+    { 
+      label: "Facilities", 
+      href: "/admin/facilities",
+      roles: [UserRoles.ADMIN, UserRoles.SUPER_ADMIN]
+    },
+    { 
+      label: "Services", 
+      href: "/admin/services",
+      roles: [UserRoles.ADMIN, UserRoles.SUPER_ADMIN]
+    },
+    { 
+      label: "Bookings", 
+      href: "/admin/bookings",
+      roles: [UserRoles.ADMIN, UserRoles.SUPER_ADMIN]
+    },
+    { 
+      label: "Payments", 
+      href: "/admin/payments",
+      roles: [UserRoles.ADMIN, UserRoles.SUPER_ADMIN]
+    },
   ];
 
-  //* Filter links based on user role
-  const filteredLinks = allLinks.filter(link => {
-    if (!link.roles || link.roles.includes(undefined as any)) {
-      return true;
-    }
-    
-    if (userRole) {
-      return link.roles.includes(userRole);
-    }
-    
-    return false;
-  });
+  //* Super Admin-only links (for sidebar, in addition to manager links)
+  const superAdminLinks: NavLink[] = [
+    { 
+      label: "System Settings", 
+      href: "/super-admin/settings",
+      roles: [UserRoles.SUPER_ADMIN]
+    },
+    { 
+      label: "Manage Admins", 
+      href: "/super-admin/admins",
+      roles: [UserRoles.SUPER_ADMIN]
+    },
+    { 
+      label: "Analytics", 
+      href: "/super-admin/analytics",
+      roles: [UserRoles.SUPER_ADMIN]
+    },
+    { 
+      label: "Audit Logs", 
+      href: "/super-admin/audit-logs",
+      roles: [UserRoles.SUPER_ADMIN]
+    },
+  ];
 
-  //* Also get role-specific dashboard link for quick access
+  //* Get header navigation based on role
+  const getHeaderNavigation = (): NavLink[] => {
+    const links = [...baseLinks];
+    
+    // Add regular user links to header if user is logged in as USER
+    if (userRole === UserRoles.USER) {
+      links.push(...regularUserLinks);
+    }
+    
+    return links;
+  };
+
+  //* Get sidebar navigation ONLY for Managers and Super Admins
+  const getSidebarNavigation = (): NavLink[] => {
+    const sidebarLinks: NavLink[] = [];
+
+    // Only managers and super admins get sidebar
+    if (userRole === UserRoles.ADMIN) {
+      sidebarLinks.push(...managerLinks);
+    } else if (userRole === UserRoles.SUPER_ADMIN) {
+      sidebarLinks.push(...managerLinks, ...superAdminLinks);
+    }
+
+    return sidebarLinks;
+  };
+
+  //* Check if user has sidebar navigation (ONLY for managers/super admins)
+  const hasSidebarNavigation = (): boolean => {
+    return [UserRoles.ADMIN, UserRoles.SUPER_ADMIN].includes(userRole as UserRoles);
+  };
+
+  //* Check if user is a regular user (for showing user-specific links in header)
+  const isRegularUser = (): boolean => {
+    return userRole === UserRoles.USER;
+  };
+
+  //* Get dashboard link for quick access
   const getDashboardLink = (): string => {
     switch (userRole) {
       case UserRoles.ADMIN:
-        return "/admin";
+        return "/admin/dashboard";
       case UserRoles.SUPER_ADMIN:
-        return "/super-admin";
+        return "/super-admin/dashboard";
       case UserRoles.USER:
-        return "/user/dashboard";
+        return "/bookings";
       default:
         return "/";
     }
   };
 
+  //* Get role-specific home link (for redirects)
+  const getRoleHomeLink = (): string => {
+    switch (userRole) {
+      case UserRoles.ADMIN:
+        return "/admin/dashboard";
+      case UserRoles.SUPER_ADMIN:
+        return "/super-admin/dashboard";
+      case UserRoles.USER:
+        return "/bookings";
+      default:
+        return "/";
+    }
+  };
+
+  //* Get role label for display
+  const getRoleLabel = (): string => {
+    switch (userRole) {
+      case UserRoles.ADMIN:
+        return "Manager";
+      case UserRoles.SUPER_ADMIN:
+        return "Super Admin";
+      case UserRoles.USER:
+        return "User";
+      default:
+        return "Guest";
+    }
+  };
+
+  //* Check if user can access admin features (uses FacilityProvider)
+  const canAccessAdminFeatures = (): boolean => {
+    return [UserRoles.ADMIN, UserRoles.SUPER_ADMIN].includes(userRole as UserRoles);
+  };
+
   return {
-    navLinks: filteredLinks,
+    // Header navigation (base links + user-specific links for regular users)
+    headerNavLinks: getHeaderNavigation(),
+    
+    // Sidebar navigation (ONLY for managers and super admins)
+    sidebarNavLinks: getSidebarNavigation(),
+    
+    // Helper functions
+    hasSidebarNavigation: hasSidebarNavigation(),
+    isRegularUser: isRegularUser(),
+    canAccessAdminFeatures: canAccessAdminFeatures(),
     getDashboardLink,
+    getRoleHomeLink,
+    getRoleLabel,
     userRole,
   };
 };

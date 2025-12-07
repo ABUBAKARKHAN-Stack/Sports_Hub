@@ -16,7 +16,7 @@ const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const { session } = useAuth();
-  const { navLinks } = useRoleNavigation(session?.user?.role);
+  const { headerNavLinks } = useRoleNavigation(session?.user?.role);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -39,7 +39,7 @@ const Header = () => {
             <Logo />
 
             {/* Desktop Header */}
-            <DesktopHeader navLinks={navLinks} />
+            <DesktopHeader navLinks={headerNavLinks} />
 
             {/* User Menu and Mobile Menu Trigger */}
             <div className="flex gap-x-3 items-center">
@@ -57,7 +57,11 @@ const Header = () => {
         </ContainerLayout>
 
         {/* Mobile Menu Drawer */}
-        <MobileMenu isOpen={isMenuOpen} setIsOpen={setIsMenuOpen} navLinks={navLinks} />
+        <MobileMenu 
+          isOpen={isMenuOpen} 
+          setIsOpen={setIsMenuOpen} 
+          navLinks={headerNavLinks} 
+        />
       </header>
     </>
   );
