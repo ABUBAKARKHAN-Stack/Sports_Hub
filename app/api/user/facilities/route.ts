@@ -5,11 +5,10 @@ import { ApiError } from '@/utils/ApiError';
 import { Facility } from '@/models/facility.model';
 import { FacilityStatusEnum } from '@/types/main.types';
 
-//* GET all facilities for admin
+//* GET all facilities for users
 async function getFacilities(req: NextRequest) {
     try {
         await connectDb();
-
 
         const { searchParams } = new URL(req.url);
         const page = parseInt(searchParams.get('page') || '1');

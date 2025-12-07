@@ -52,7 +52,7 @@ export interface IFacility {
     _id: Types.ObjectId;
     name: string;
     description?: string;
-    adminId: Types.ObjectId;
+    adminId: Types.ObjectId
     location: {
         address?: string;
         city?: string;

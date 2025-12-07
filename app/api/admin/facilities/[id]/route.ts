@@ -16,8 +16,8 @@ export async function GET(
     await connectDb();
 
     const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
-    const adminId = "693321382f71c557aa971adc";
-    const userRole = "ADMIN" as UserRoles;
+    const adminId = token?.sub;
+    const userRole = token?.role as UserRoles;
 
     if (!adminId || userRole !== UserRoles.ADMIN) {
       return NextResponse.json(

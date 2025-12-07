@@ -6,10 +6,18 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import ContainerLayout from "../layout/ContainerLayout";
+import { useUserFacility } from "@/context/user/UserFacilityContext";
 
 export default function Hero() {
   const [searchQuery, setSearchQuery] = useState("");
   const [location, setLocation] = useState("");
+  const {
+    state,
+    getFacilityById
+  } = useUserFacility()
+
+  console.log(state);
+  
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
