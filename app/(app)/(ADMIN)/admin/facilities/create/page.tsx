@@ -9,7 +9,7 @@ import { Building } from 'lucide-react'
 const CreateFacility = () => {
     const {
         createFacility,
-        state: { loading, error },
+        state: { loading },
     } = useFacility()
     return (
 

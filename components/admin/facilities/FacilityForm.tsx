@@ -19,7 +19,7 @@ import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Loader2, Plus, Trash2, Upload, MapPin, Phone, Clock, ImageIcon, VideoIcon, AlertCircle, ArrowLeft } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 
 type FacilityFormData = {
@@ -44,8 +44,8 @@ type FacilityFormData = {
     isClosed?: boolean;
   }[];
   gallery: {
-    images: File[];
-    introductoryVideo?: File | null;
+    images: (File | string)[]; // Both File objects and string URLs
+    introductoryVideo?: File | string | null; // Both File objects and string URLs
   };
 };
 
@@ -84,11 +84,11 @@ const defaultFormValues: FacilityFormData = {
 
 interface FacilityFormProps {
   initialData?: Partial<FacilityFormData>;
-  onSubmit: (data: FacilityFormData) => Promise<void>;
+  onSubmit: (data: FormData) => Promise<void>; // Changed to FormData
   onCancel?: () => void;
   isLoading?: boolean;
-  onSuccess?: () => void; // Callback for successful submission
-  goBackUrl?: string; // URL for Go Back button
+  onSuccess?: () => void;
+  goBackUrl?: string;
 }
 
 export default function FacilityForm({ 
@@ -99,10 +99,11 @@ export default function FacilityForm({
   onSuccess,
   goBackUrl
 }: FacilityFormProps) {
-  const [imageFiles, setImageFiles] = useState<File[]>([]);
-  const [introductoryVideoFile, setIntroductoryVideoFile] = useState<File | null>(null);
+  const [imageFiles, setImageFiles] = useState<(File | string)[]>([]);
+  const [introductoryVideoFile, setIntroductoryVideoFile] = useState<File | string | null>(null);
   const [videoError, setVideoError] = useState<string | null>(null);
   const router = useRouter();
+  const objectUrlsRef = useRef<string[]>([]); // Track created object URLs for cleanup
   
   const form = useForm<FacilityFormData>({
     resolver: zodResolver(createFacilitySchema as any),
@@ -110,6 +111,50 @@ export default function FacilityForm({
   });
 
   const openingHours = form.watch('openingHours');
+
+  // Cleanup object URLs on unmount
+  useEffect(() => {
+    return () => {
+      objectUrlsRef.current.forEach(url => URL.revokeObjectURL(url));
+      objectUrlsRef.current = [];
+    };
+  }, []);
+
+  // Helper function to get image source URL
+  const getImageSrc = (image: File | string): string => {
+    if (typeof image === 'string') {
+      return image; // Already a URL string
+    }
+    const url = URL.createObjectURL(image);
+    objectUrlsRef.current.push(url); // Track for cleanup
+    return url;
+  };
+
+  // Helper function to get video name
+  const getVideoName = (video: File | string): string => {
+    if (typeof video === 'string') {
+      // Extract filename from URL
+      try {
+        const url = new URL(video);
+        const pathname = url.pathname;
+        const filename = pathname.substring(pathname.lastIndexOf('/') + 1);
+        return decodeURIComponent(filename) || 'Introductory Video';
+      } catch {
+        return 'Introductory Video';
+      }
+    }
+    return video.name || 'Video File';
+  };
+
+  // Helper function to get video source
+  const getVideoSrc = (video: File | string): string => {
+    if (typeof video === 'string') {
+      return video; // Already a URL
+    }
+    const url = URL.createObjectURL(video);
+    objectUrlsRef.current.push(url); // Track for cleanup
+    return url;
+  };
 
   useEffect(() => {
     if (initialData) {
@@ -137,47 +182,90 @@ export default function FacilityForm({
             }))
           : defaultFormValues.openingHours,
         gallery: {
-          images: (initialData?.gallery?.images as File[]) || defaultFormValues.gallery.images,
-          introductoryVideo: (initialData?.gallery?.introductoryVideo as File) || null,
+          images: (initialData?.gallery?.images as (File | string)[]) || defaultFormValues.gallery.images,
+          introductoryVideo: initialData?.gallery?.introductoryVideo as File | string | null || null,
         },
         description: initialData?.description || null,
       };
 
       form.reset(mergedData);
       
+      // Set image files
       if (initialData.gallery?.images && Array.isArray(initialData.gallery.images)) {
-        setImageFiles(initialData.gallery.images as File[]);
+        setImageFiles(initialData.gallery.images);
       }
       
+      // Set video file
       if (initialData.gallery?.introductoryVideo) {
-        setIntroductoryVideoFile(initialData.gallery.introductoryVideo as File);
+        setIntroductoryVideoFile(initialData.gallery.introductoryVideo as File | string);
       }
     }
   }, [initialData, form]);
 
   const handleSubmit = async (data: FacilityFormData) => {
     try {
-      const processedData = {
-        ...data,
-        openingHours: data.openingHours.map(hour => ({
-          ...hour,
-          isClosed: hour.isClosed ?? false,
-          openingTime: hour.isClosed ? '' : hour.openingTime,
-          closingTime: hour.isClosed ? '' : hour.closingTime,
-        })),
-      };
+      // Create FormData for file upload
+      const formData = new FormData();
       
-      await onSubmit(processedData);
+      // Append basic fields
+      formData.append('name', data.name);
+      formData.append('description', data.description || '');
+      formData.append('location', JSON.stringify(data.location));
+      formData.append('contact', JSON.stringify(data.contact));
       
-      // Reset form on success
-      resetForm();
+      // Process opening hours
+      const processedOpeningHours = data.openingHours.map(hour => ({
+        ...hour,
+        isClosed: hour.isClosed ?? false,
+        openingTime: hour.isClosed ? '' : hour.openingTime,
+        closingTime: hour.isClosed ? '' : hour.closingTime,
+      }));
+      formData.append('openingHours', JSON.stringify(processedOpeningHours));
+      
+      // Append images (only new File objects, skip string URLs)
+      let newImageCount = 0;
+      data.gallery.images.forEach((image, index) => {
+        if (image instanceof File) {
+          formData.append(`newImages`, image); // New images
+          newImageCount++;
+        }
+      });
+      
+      // Append existing image URLs
+      const existingImageUrls = data.gallery.images
+        .filter(img => typeof img === 'string')
+        .map(img => ({ url: img }));
+      if (existingImageUrls.length > 0) {
+        formData.append('existingImages', JSON.stringify(existingImageUrls));
+      }
+      
+      // Append video (only if it's a new File)
+      if (data.gallery.introductoryVideo instanceof File) {
+        formData.append('newIntroductoryVideo', data.gallery.introductoryVideo);
+      }
+      
+      // If video is a string URL, keep it as existing
+      if (typeof data.gallery.introductoryVideo === 'string') {
+        formData.append('existingVideoUrl', data.gallery.introductoryVideo);
+      }
+      
+      // If video is being removed (null), mark it
+      if (data.gallery.introductoryVideo === null) {
+        formData.append('removeVideo', 'true');
+      }
+      
+      // Add metadata
+      formData.append('totalNewImages', newImageCount.toString());
+      formData.append('totalExistingImages', existingImageUrls.length.toString());
+      
+      await onSubmit(formData);
       
       // Call success callback if provided
       if (onSuccess) {
         onSuccess();
       }
+      
     } catch (error) {
-      // Error handling is done by the parent component
       console.error('Form submission error:', error);
     }
   };
@@ -187,6 +275,10 @@ export default function FacilityForm({
     setImageFiles([]);
     setIntroductoryVideoFile(null);
     setVideoError(null);
+    
+    // Cleanup object URLs
+    objectUrlsRef.current.forEach(url => URL.revokeObjectURL(url));
+    objectUrlsRef.current = [];
   };
 
   const handleGoBack = () => {
@@ -214,6 +306,14 @@ export default function FacilityForm({
     const newImages = imageFiles.filter((_, i) => i !== index);
     setImageFiles(newImages);
     form.setValue('gallery.images', newImages, { shouldValidate: true });
+    
+    // If removing a File object, revoke its object URL
+    const removedImage = imageFiles[index];
+    if (removedImage instanceof File) {
+      const url = getImageSrc(removedImage);
+      URL.revokeObjectURL(url);
+      objectUrlsRef.current = objectUrlsRef.current.filter(u => u !== url);
+    }
   };
 
   const handleVideoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -236,11 +336,25 @@ export default function FacilityForm({
       return;
     }
 
+    // Cleanup previous video object URL if it was a File
+    if (introductoryVideoFile instanceof File) {
+      const oldUrl = getVideoSrc(introductoryVideoFile);
+      URL.revokeObjectURL(oldUrl);
+      objectUrlsRef.current = objectUrlsRef.current.filter(u => u !== oldUrl);
+    }
+
     setIntroductoryVideoFile(file);
     form.setValue('gallery.introductoryVideo', file, { shouldValidate: true });
   };
 
   const removeVideo = () => {
+    // Cleanup object URL if it was a File
+    if (introductoryVideoFile instanceof File) {
+      const url = getVideoSrc(introductoryVideoFile);
+      URL.revokeObjectURL(url);
+      objectUrlsRef.current = objectUrlsRef.current.filter(u => u !== url);
+    }
+    
     setIntroductoryVideoFile(null);
     setVideoError(null);
     form.setValue('gallery.introductoryVideo', null, { shouldValidate: true });
@@ -313,10 +427,11 @@ export default function FacilityForm({
   };
 
   const formatFileSize = (bytes: number): string => {
+    if (!bytes || bytes <= 0) return '0 bytes';
     if (bytes < 1024) return bytes + ' bytes';
     else if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
     else return (bytes / 1048576).toFixed(1) + ' MB';
-  };  
+  };
 
   return (
     <div className="space-y-6">
@@ -656,7 +771,7 @@ export default function FacilityForm({
                       {imageFiles.map((image, index) => (
                         <div key={index} className="relative group rounded-lg overflow-hidden border">
                           <img
-                            src={URL.createObjectURL(image)}
+                            src={getImageSrc(image)}
                             alt={`Facility image ${index + 1}`}
                             className="w-full h-32 object-cover"
                           />
@@ -670,7 +785,7 @@ export default function FacilityForm({
                             <Trash2 className="h-4 w-4" />
                           </Button>
                           <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white text-xs p-1">
-                            Image {index + 1}
+                            {typeof image === 'string' ? 'Existing Image' : `Image ${index + 1}`}
                           </div>
                         </div>
                       ))}
@@ -741,9 +856,11 @@ export default function FacilityForm({
                             <span className="text-red-600 font-medium">VID</span>
                           </div>
                           <div>
-                            <p className="font-medium">{introductoryVideoFile.name}</p>
+                            <p className="font-medium">{getVideoName(introductoryVideoFile)}</p>
                             <p className="text-xs text-gray-500">
-                              {formatFileSize(introductoryVideoFile.size)} • {introductoryVideoFile.type}
+                              {typeof introductoryVideoFile === 'string'
+                                ? 'Existing video from server'
+                                : `${formatFileSize(introductoryVideoFile.size)} • ${introductoryVideoFile.type}`}
                             </p>
                           </div>
                         </div>
@@ -757,6 +874,22 @@ export default function FacilityForm({
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
+                      
+                      {/* Video Preview */}
+                      <div className="p-4">
+                        <video 
+                          controls 
+                          className="size-80 rounded-md"
+                          preload="metadata"
+                        >
+                          <source src={getVideoSrc(introductoryVideoFile)} 
+                            type={typeof introductoryVideoFile === 'string' 
+                              ? 'video/mp4' 
+                              : introductoryVideoFile.type} 
+                          />
+                          Your browser does not support the video tag.
+                        </video>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -767,7 +900,6 @@ export default function FacilityForm({
           {/* Form Actions */}
           <div className="flex justify-between pt-4 border-t">
             <div className="flex space-x-4">
-              {/* Go Back Button (alternative to top button) */}
               <Button
                 type="button"
                 variant="outline"
@@ -780,7 +912,6 @@ export default function FacilityForm({
                 Go Back
               </Button>
               
-              {/* Reset Form Button */}
               <Button
                 type="button"
                 variant="outline"

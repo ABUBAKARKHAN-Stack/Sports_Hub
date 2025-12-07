@@ -80,7 +80,10 @@ export async function PUT(
     }
 
     const { id } = await params;
-    const body = await req.json();
+    const body = await req.formData();
+
+    console.log(id,body);
+    
 
     // Find facility
     const facility = await Facility.findById(id);
