@@ -1,9 +1,27 @@
-import React from 'react'
+import FacilityDetailsView from '@/components/admin/facilities/FacilityDetailsView';
+import ContainerLayout from '@/components/layout/ContainerLayout';
+import { Metadata } from 'next';
 
-const SingleFacilityPage = () => {
-  return (
-    <div>SingleFacilityPage</div>
-  )
+interface PageProps {
+  params: Promise<{ id: string }>;
 }
 
-export default SingleFacilityPage
+export async function generateMetadata(): Promise<Metadata> {
+
+  return {
+    title: "Facility Details | Admin Dashboard",
+    description: 'View facility details',
+  };
+}
+
+export default async function SingleFacilityPage({ params }: PageProps) {
+  const { id } = await params;
+
+  return (
+    <main className='mt-10'>
+      <ContainerLayout>
+        <FacilityDetailsView id={id} />
+      </ContainerLayout>
+    </main>
+  );
+}

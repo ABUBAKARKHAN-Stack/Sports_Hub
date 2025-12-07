@@ -4,9 +4,9 @@ import { ApiResponse } from '@/utils/ApiResponse';
 import { ApiError } from '@/utils/ApiError';
 import { Facility } from '@/models/facility.model';
 import { getToken } from 'next-auth/jwt';
-import { UserRoles } from '@/types/main.types';
+import { FacilityStatusEnum, UserRoles } from '@/types/main.types';
 import { isValidObjectId } from 'mongoose';
-import { deleteFromCloudinary, extractPublicId } from '@/lib/uploadToCloudinary';
+import { deleteFromCloudinary, extractPublicId, uploadToCloudinary } from '@/lib/uploadToCloudinary';
 
 export async function GET(
   req: NextRequest,
@@ -80,10 +80,7 @@ export async function PUT(
     }
 
     const { id } = await params;
-    const body = await req.formData();
-
-    console.log(id,body);
-    
+    const formData = await req.formData();
 
     // Find facility
     const facility = await Facility.findById(id);
@@ -103,12 +100,148 @@ export async function PUT(
       );
     }
 
-    // Update facility
+    //* Prepare update object
+    const updateData: any = {};
+    
+    //* Extract form data
+    const name = formData.get("name") as string;
+    const description = formData.get("description") as string;
+    const location = formData.get("location") as string;
+    const contact = formData.get("contact") as string;
+    const openingHours = formData.get("openingHours") as string;
+    const existingImages = formData.get("existingImages") as string;
+    const existingVideoUrl = formData.get("existingVideoUrl") as string;
+    const removeVideo = formData.get("removeVideo") === "true";
+    const isUpdate = formData.get("isUpdate") === "true";
+    const totalNewImages = parseInt(formData.get("totalNewImages") as string) || 0;
+
+    console.log("Form data received:", {
+      name, description, existingImages, existingVideoUrl,
+      removeVideo, isUpdate, totalNewImages
+    });
+
+    //* Update basic fields
+    if (name) updateData.name = name;
+    if (description !== null && description !== undefined) {
+      updateData.description = description || null;
+    }
+    if (location) {
+      try {
+        updateData.location = JSON.parse(location);
+      } catch (error) {
+        console.warn("Invalid location format");
+      }
+    }
+    if (contact) {
+      try {
+        updateData.contact = JSON.parse(contact);
+      } catch (error) {
+        console.warn("Invalid contact format");
+      }
+    }
+    if (openingHours) {
+      try {
+        updateData.openingHours = JSON.parse(openingHours);
+      } catch (error) {
+        console.warn("Invalid openingHours format");
+      }
+    }
+
+    //* Handle gallery images
+    if (isUpdate) {
+      // For update: combine existing and new images
+      let allImages: string[] = [];
+      
+      // Parse existing images
+      if (existingImages) {
+        try {
+          const parsedExisting = JSON.parse(existingImages);
+          if (Array.isArray(parsedExisting)) {
+            allImages = parsedExisting.map((img: any) => img.url);
+          }
+        } catch (error) {
+          console.warn("Invalid existingImages format");
+        }
+      }
+
+      // Upload new images
+      const newImages: string[] = [];
+      for (let i = 0; i < totalNewImages; i++) {
+        const newImage = formData.get("newImages") as File;
+        if (newImage && newImage.size > 0) {
+          const buffer = Buffer.from(await newImage.arrayBuffer());
+          const uploaded = await uploadToCloudinary(buffer, "facilities/gallery", "image");
+          console.log("New Image Uploaded:", uploaded.public_id);
+          newImages.push(uploaded.secure_url);
+        }
+      }
+
+      // Combine existing and new images
+      if (allImages.length > 0 || newImages.length > 0) {
+        updateData.gallery = updateData.gallery || {};
+        updateData.gallery.images = [...allImages, ...newImages];
+      }
+    } else {
+      // For create: handle images normally
+      const images = formData.getAll("images") as File[];
+      if (images && images.length > 0 && images[0]?.size > 0) {
+        const galleryImages: string[] = [];
+        
+        for (const file of images) {
+          const buffer = Buffer.from(await file.arrayBuffer());
+          const uploaded = await uploadToCloudinary(buffer, "facilities/gallery", "image");
+          console.log("Image Uploaded On Cloudinary", uploaded.public_id);
+          galleryImages.push(uploaded.secure_url);
+        }
+        
+        updateData.gallery = updateData.gallery || {};
+        updateData.gallery.images = galleryImages;
+      }
+    }
+
+    //* Handle video
+    updateData.gallery = updateData.gallery || {};
+    
+    if (existingVideoUrl) {
+      // Keep existing video
+      updateData.gallery.introductoryVideo = existingVideoUrl;
+    } else if (removeVideo) {
+      // Remove video
+      updateData.gallery.introductoryVideo = null;
+    } else {
+      // Upload new video if provided
+      const newVideo = formData.get("newIntroductoryVideo") as File;
+      if (newVideo && newVideo.size > 0) {
+        const buffer = Buffer.from(await newVideo.arrayBuffer());
+        const uploadedVideo = await uploadToCloudinary(
+          buffer,
+          "facilities/videos",
+          "video"
+        );
+        console.log("Video Uploaded On Cloudinary", uploadedVideo.public_id);
+        
+        updateData.gallery.introductoryVideo = uploadedVideo.secure_url;
+      }
+    }
+
+    console.log("Final update data:", JSON.stringify(updateData, null, 2));
+
+    //* Update facility
     const updatedFacility = await Facility.findByIdAndUpdate(
       id,
-      body,
-      { new: true, runValidators: true }
-    ).populate('services', 'title price');
+      updateData,
+      { 
+        new: true, 
+        runValidators: true
+      }
+    ).populate('adminId', 'username email').populate('services', 'title price');
+
+    if (!updatedFacility) {
+      return NextResponse.json(
+        new ApiError(404, "Facility not found after update"),
+        { status: 404 }
+      );
+    }
 
     return NextResponse.json(
       new ApiResponse(200, "Facility updated successfully", updatedFacility),
@@ -125,13 +258,19 @@ export async function PUT(
       );
     }
 
+    if (error.code === 11000) {
+      return NextResponse.json(
+        new ApiError(400, "Facility with this name already exists"),
+        { status: 400 }
+      );
+    }
+
     return NextResponse.json(
       new ApiError(500, "Failed to update facility", error.message),
       { status: 500 }
     );
   }
 }
-
 //* Delete facility
 export async function DELETE(
   req: NextRequest,

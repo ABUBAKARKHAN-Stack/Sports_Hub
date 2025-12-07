@@ -21,6 +21,7 @@ import { Badge } from '@/components/ui/badge';
 import { Loader2, Plus, Trash2, Upload, MapPin, Phone, Clock, ImageIcon, VideoIcon, AlertCircle, ArrowLeft } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import { z } from 'zod';
 
 type FacilityFormData = {
   name: string;
@@ -43,9 +44,9 @@ type FacilityFormData = {
     closingTime: string;
     isClosed?: boolean;
   }[];
-  gallery: {
-    images: (File | string)[]; // Both File objects and string URLs
-    introductoryVideo?: File | string | null; // Both File objects and string URLs
+  gallery?: {
+    images: (File | string)[];
+    introductoryVideo?: File | string | null;
   };
 };
 
@@ -84,17 +85,93 @@ const defaultFormValues: FacilityFormData = {
 
 interface FacilityFormProps {
   initialData?: Partial<FacilityFormData>;
-  onSubmit: (data: FormData) => Promise<void>; // Changed to FormData
+  onSubmit: (data: FormData) => Promise<void>;
   onCancel?: () => void;
   isLoading?: boolean;
   onSuccess?: () => void;
   goBackUrl?: string;
 }
 
-export default function FacilityForm({ 
-  initialData, 
-  onSubmit, 
-  onCancel, 
+// Create a custom schema for the form that handles both create and edit modes
+const getFormSchema = (isEditMode: boolean) => {
+  // Base schema for common validation
+  const baseSchema = z.object({
+    name: z.string().min(1, "Name is required").max(100),
+    description: z.string().nullable().optional(),
+    location: z.object({
+      address: z.string().min(1, "Address is required"),
+      city: z.string().min(1, "City is required"),
+      coordinates: z.object({
+        lat: z.number().optional(),
+        lng: z.number().optional(),
+      }).optional(),
+    }),
+    contact: z.object({
+      phone: z.string().min(1, "Phone number is required"),
+      email: z.string().email("Invalid email address"),
+    }),
+    openingHours: z.array(
+      z.object({
+        day: z.enum(['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']),
+        openingTime: z.string().optional(),
+        closingTime: z.string().optional(),
+        isClosed: z.boolean().optional(),
+      })
+    ).min(1, "At least one opening hour entry is required"),
+  });
+
+  // For edit mode, accept both Files and strings for existing data
+  if (isEditMode) {
+    return baseSchema.extend({
+      gallery: z.object({
+        images: z.array(
+          z.union([
+            z.string().url("Must be a valid URL"),
+            z.instanceof(File, {
+              message: "Must be a file"
+            }).refine(file => file.size <= 5 * 1024 * 1024, {
+              message: "Image size must be less than 5MB",
+            })
+          ])
+        ).min(1, "At least one image is required"),
+        introductoryVideo: z.union([
+          z.string().url("Must be a valid URL"),
+          z.instanceof(File, {
+            message: "Must be a file"
+          }).refine(file => file.size <= MAX_VIDEO_SIZE, {
+            message: "Video size must be less than 10MB",
+          }),
+          z.null()
+        ]).optional(),
+      }).optional(),
+    });
+  }
+
+  // For create mode, only accept Files
+  return baseSchema.extend({
+    gallery: z.object({
+      images: z.array(
+        z.instanceof(File, {
+          message: "Must be a file"
+        }).refine(file => file.size <= 5 * 1024 * 1024, {
+          message: "Image size must be less than 5MB",
+        })
+      ).min(1, "At least one image is required"),
+      introductoryVideo: z.instanceof(File, {
+        message: "Must be a file"
+      }).refine(file => file.size <= MAX_VIDEO_SIZE, {
+        message: "Video size must be less than 10MB",
+      })
+        .nullable()
+        .optional(),
+    }).optional(),
+  });
+};
+
+export default function FacilityForm({
+  initialData,
+  onSubmit,
+  onCancel,
   isLoading = false,
   onSuccess,
   goBackUrl
@@ -103,12 +180,21 @@ export default function FacilityForm({
   const [introductoryVideoFile, setIntroductoryVideoFile] = useState<File | string | null>(null);
   const [videoError, setVideoError] = useState<string | null>(null);
   const router = useRouter();
-  const objectUrlsRef = useRef<string[]>([]); // Track created object URLs for cleanup
-  
+  const objectUrlsRef = useRef<string[]>([]);
+
+  // Determine if we're in edit mode
+  const isEditMode = !!initialData;
+
+  // Use the appropriate schema based on mode
+  const formSchema = getFormSchema(isEditMode);
+
   const form = useForm<FacilityFormData>({
-    resolver: zodResolver(createFacilitySchema as any),
+    resolver: zodResolver(formSchema as any),
     defaultValues: defaultFormValues,
+    mode: 'onChange',
   });
+
+  console.log(form.formState.errors);
 
   const openingHours = form.watch('openingHours');
 
@@ -156,8 +242,43 @@ export default function FacilityForm({
     return url;
   };
 
+  // Helper function to convert time format
+  const convertTimeFormat = (timeStr: string): string => {
+    if (!timeStr) return '09:00';
+
+    // Check if it's already in 24-hour format
+    if (timeStr.includes(':')) return timeStr;
+
+    // Convert "9AM" to "09:00", "5PM" to "17:00"
+    try {
+      let time = timeStr.toLowerCase().trim();
+      const isPM = time.includes('pm');
+      const isAM = time.includes('am');
+
+      // Extract numbers
+      const numbers = time.match(/\d+/g);
+      if (!numbers) return '09:00';
+
+      let hour = parseInt(numbers[0]);
+
+      // Convert to 24-hour format
+      if (isPM && hour < 12) hour += 12;
+      if (isAM && hour === 12) hour = 0;
+
+      return `${hour.toString().padStart(2, '0')}:00`;
+    } catch {
+      return '09:00';
+    }
+  };
+
   useEffect(() => {
     if (initialData) {
+      // Safely access gallery data with defaults
+      const galleryData = initialData.gallery || {
+        images: [],
+        introductoryVideo: null,
+      };
+
       const mergedData: FacilityFormData = {
         ...defaultFormValues,
         ...initialData,
@@ -173,32 +294,41 @@ export default function FacilityForm({
           ...defaultFormValues.contact,
           ...initialData?.contact,
         },
-        openingHours: initialData?.openingHours?.length 
+        openingHours: initialData?.openingHours?.length
           ? initialData.openingHours.map(hour => ({
-              ...hour,
-              isClosed: hour.isClosed ?? false,
-              openingTime: hour.openingTime || '09:00',
-              closingTime: hour.closingTime || '17:00',
-            }))
+            ...hour,
+            isClosed: hour.isClosed ?? false,
+            openingTime: convertTimeFormat(hour.openingTime || '09:00'),
+            closingTime: convertTimeFormat(hour.closingTime || '17:00'),
+          }))
           : defaultFormValues.openingHours,
         gallery: {
-          images: (initialData?.gallery?.images as (File | string)[]) || defaultFormValues.gallery.images,
-          introductoryVideo: initialData?.gallery?.introductoryVideo as File | string | null || null,
+          images: (galleryData.images as (File | string)[]) || defaultFormValues.gallery!.images,
+          introductoryVideo: galleryData.introductoryVideo as File | string | null || null,
         },
         description: initialData?.description || null,
       };
 
       form.reset(mergedData);
-      
-      // Set image files
-      if (initialData.gallery?.images && Array.isArray(initialData.gallery.images)) {
-        setImageFiles(initialData.gallery.images);
+
+      // Set image files safely
+      if (galleryData.images && Array.isArray(galleryData.images)) {
+        setImageFiles(galleryData.images);
+      } else {
+        setImageFiles([]);
       }
-      
-      // Set video file
-      if (initialData.gallery?.introductoryVideo) {
-        setIntroductoryVideoFile(initialData.gallery.introductoryVideo as File | string);
+
+      // Set video file safely
+      if (galleryData.introductoryVideo) {
+        setIntroductoryVideoFile(galleryData.introductoryVideo as File | string);
+      } else {
+        setIntroductoryVideoFile(null);
       }
+    } else {
+      // For create form, reset to defaults
+      form.reset(defaultFormValues);
+      setImageFiles([]);
+      setIntroductoryVideoFile(null);
     }
   }, [initialData, form]);
 
@@ -206,13 +336,13 @@ export default function FacilityForm({
     try {
       // Create FormData for file upload
       const formData = new FormData();
-      
+
       // Append basic fields
       formData.append('name', data.name);
       formData.append('description', data.description || '');
       formData.append('location', JSON.stringify(data.location));
       formData.append('contact', JSON.stringify(data.contact));
-      
+
       // Process opening hours
       const processedOpeningHours = data.openingHours.map(hour => ({
         ...hour,
@@ -221,50 +351,68 @@ export default function FacilityForm({
         closingTime: hour.isClosed ? '' : hour.closingTime,
       }));
       formData.append('openingHours', JSON.stringify(processedOpeningHours));
-      
-      // Append images (only new File objects, skip string URLs)
-      let newImageCount = 0;
-      data.gallery.images.forEach((image, index) => {
-        if (image instanceof File) {
-          formData.append(`newImages`, image); // New images
-          newImageCount++;
+
+      // Handle images based on whether we're updating or creating
+      const isUpdate = !!initialData;
+
+      formData.append('isUpdate', isUpdate.toString());
+
+      if (isUpdate) {
+        // For update: append existing image URLs
+        const existingImageUrls = (data.gallery?.images || [])
+          .filter(img => typeof img === 'string')
+          .map(img => ({ url: img }));
+
+        if (existingImageUrls.length > 0) {
+          formData.append('existingImages', JSON.stringify(existingImageUrls));
         }
-      });
-      
-      // Append existing image URLs
-      const existingImageUrls = data.gallery.images
-        .filter(img => typeof img === 'string')
-        .map(img => ({ url: img }));
-      if (existingImageUrls.length > 0) {
-        formData.append('existingImages', JSON.stringify(existingImageUrls));
+
+        // Append new images (only File objects)
+        let newImageCount = 0;
+        (data.gallery?.images || []).forEach((image) => {
+          if (image instanceof File) {
+            formData.append('newImages', image); // Append all new images with same key
+            newImageCount++;
+          }
+        });
+        formData.append('totalNewImages', newImageCount.toString());
+      } else {
+        // For create: append all images as files
+        (data.gallery?.images || []).forEach((image) => {
+          if (image instanceof File) {
+            formData.append('images', image); // For create, use 'images' key
+          }
+        });
       }
-      
-      // Append video (only if it's a new File)
-      if (data.gallery.introductoryVideo instanceof File) {
+
+      // Handle video
+      if (data.gallery?.introductoryVideo instanceof File) {
         formData.append('newIntroductoryVideo', data.gallery.introductoryVideo);
-      }
-      
-      // If video is a string URL, keep it as existing
-      if (typeof data.gallery.introductoryVideo === 'string') {
+      } else if (typeof data.gallery?.introductoryVideo === 'string') {
+        // Existing video URL for update
         formData.append('existingVideoUrl', data.gallery.introductoryVideo);
-      }
-      
-      // If video is being removed (null), mark it
-      if (data.gallery.introductoryVideo === null) {
+      } else if (data.gallery?.introductoryVideo === null && initialData?.gallery?.introductoryVideo) {
+        // Video being removed in update
         formData.append('removeVideo', 'true');
       }
-      
-      // Add metadata
-      formData.append('totalNewImages', newImageCount.toString());
-      formData.append('totalExistingImages', existingImageUrls.length.toString());
-      
+
+      console.log('Submitting form data - isUpdate:', isUpdate, {
+        name: data.name,
+        hasGallery: !!data.gallery,
+        imageCount: data.gallery?.images?.length || 0,
+        hasVideo: !!data.gallery?.introductoryVideo,
+        isVideoFile: data.gallery?.introductoryVideo instanceof File,
+        isVideoUrl: typeof data.gallery?.introductoryVideo === 'string'
+      });
+
+      console.log('FormData entries:', Array.from(formData.entries()));
       await onSubmit(formData);
-      
+
       // Call success callback if provided
       if (onSuccess) {
         onSuccess();
       }
-      
+
     } catch (error) {
       console.error('Form submission error:', error);
     }
@@ -275,7 +423,7 @@ export default function FacilityForm({
     setImageFiles([]);
     setIntroductoryVideoFile(null);
     setVideoError(null);
-    
+
     // Cleanup object URLs
     objectUrlsRef.current.forEach(url => URL.revokeObjectURL(url));
     objectUrlsRef.current = [];
@@ -298,7 +446,7 @@ export default function FacilityForm({
     const newFiles = Array.from(files);
     const updatedFiles = [...imageFiles, ...newFiles];
     setImageFiles(updatedFiles);
-    
+
     form.setValue('gallery.images', updatedFiles, { shouldValidate: true });
   };
 
@@ -306,7 +454,7 @@ export default function FacilityForm({
     const newImages = imageFiles.filter((_, i) => i !== index);
     setImageFiles(newImages);
     form.setValue('gallery.images', newImages, { shouldValidate: true });
-    
+
     // If removing a File object, revoke its object URL
     const removedImage = imageFiles[index];
     if (removedImage instanceof File) {
@@ -354,7 +502,7 @@ export default function FacilityForm({
       URL.revokeObjectURL(url);
       objectUrlsRef.current = objectUrlsRef.current.filter(u => u !== url);
     }
-    
+
     setIntroductoryVideoFile(null);
     setVideoError(null);
     form.setValue('gallery.introductoryVideo', null, { shouldValidate: true });
@@ -362,10 +510,10 @@ export default function FacilityForm({
 
   const addOpeningHour = () => {
     const currentHours = form.getValues('openingHours');
-    const availableDays = DAYS.filter(day => 
+    const availableDays = DAYS.filter(day =>
       !currentHours.some(hour => hour.day === day)
     );
-    
+
     if (availableDays.length > 0) {
       const newHours = [
         ...currentHours,
@@ -383,19 +531,19 @@ export default function FacilityForm({
   const removeOpeningHour = (index: number) => {
     const currentHours = form.getValues('openingHours');
     if (currentHours.length <= 1) return;
-    
+
     const newHours = currentHours.filter((_, i) => i !== index);
     form.setValue('openingHours', newHours, { shouldValidate: true });
   };
 
   const updateOpeningHour = (
-    index: number, 
-    field: keyof FacilityFormData['openingHours'][0], 
+    index: number,
+    field: keyof FacilityFormData['openingHours'][0],
     value: any
   ) => {
     const currentHours = form.getValues('openingHours');
     const updatedHours = [...currentHours];
-    
+
     if (field === 'day') {
       updatedHours[index].day = value as typeof DAYS[number];
     } else if (field === 'openingTime') {
@@ -404,7 +552,7 @@ export default function FacilityForm({
       updatedHours[index].closingTime = value as string;
     } else if (field === 'isClosed') {
       updatedHours[index].isClosed = value as boolean;
-      
+
       if (value === true) {
         updatedHours[index].openingTime = '';
         updatedHours[index].closingTime = '';
@@ -413,13 +561,21 @@ export default function FacilityForm({
         updatedHours[index].closingTime = '17:00';
       }
     }
-    
+
     form.setValue('openingHours', updatedHours, { shouldValidate: true });
   };
 
   const validateImages = () => {
-    const images = form.getValues('gallery.images');
-    return images && images.length > 0;
+    const gallery = form.getValues('gallery');
+    if (!gallery?.images || gallery.images.length === 0) return false;
+
+    // For edit mode, accept both files and URLs
+    if (isEditMode) {
+      return gallery.images.length > 0;
+    }
+
+    // For create mode, only accept files
+    return gallery.images.some(img => img instanceof File);
   };
 
   const hasOpenDays = () => {
@@ -451,7 +607,7 @@ export default function FacilityForm({
       {/* Form */}
       <Form {...form}>
         <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
-          
+
           {/* Basic Information Card */}
           <Card>
             <CardHeader className="pb-3">
@@ -498,7 +654,7 @@ export default function FacilityForm({
                   <FormItem>
                     <FormLabel>Description (Optional)</FormLabel>
                     <FormControl>
-                      <Textarea 
+                      <Textarea
                         placeholder="Describe your facility"
                         className="min-h-[100px] resize-none"
                         value={field.value || ''}
@@ -518,10 +674,10 @@ export default function FacilityForm({
                     <FormItem>
                       <FormLabel>Address *</FormLabel>
                       <FormControl>
-                        <Textarea 
+                        <Textarea
                           placeholder="Enter complete address"
                           className="min-h-20 resize-none"
-                          {...field} 
+                          {...field}
                         />
                       </FormControl>
                       <FormMessage />
@@ -532,13 +688,13 @@ export default function FacilityForm({
                 <div className="space-y-4">
                   <div className="space-y-2">
                     <FormLabel>Latitude (Optional)</FormLabel>
-                    <Input 
-                      type="number" 
+                    <Input
+                      type="number"
                       step="any"
                       placeholder="e.g., 33.6844"
                       value={form.watch('location.coordinates.lat') || ''}
-                      onChange={e => form.setValue('location.coordinates.lat', 
-                        e.target.value === '' ? 0 : parseFloat(e.target.value), 
+                      onChange={e => form.setValue('location.coordinates.lat',
+                        e.target.value === '' ? 0 : parseFloat(e.target.value),
                         { shouldValidate: true }
                       )}
                     />
@@ -546,13 +702,13 @@ export default function FacilityForm({
 
                   <div className="space-y-2">
                     <FormLabel>Longitude (Optional)</FormLabel>
-                    <Input 
-                      type="number" 
+                    <Input
+                      type="number"
                       step="any"
                       placeholder="e.g., 73.0479"
                       value={form.watch('location.coordinates.lng') || ''}
-                      onChange={e => form.setValue('location.coordinates.lng', 
-                        e.target.value === '' ? 0 : parseFloat(e.target.value), 
+                      onChange={e => form.setValue('location.coordinates.lng',
+                        e.target.value === '' ? 0 : parseFloat(e.target.value),
                         { shouldValidate: true }
                       )}
                     />
@@ -579,9 +735,9 @@ export default function FacilityForm({
                     <FormItem>
                       <FormLabel>Phone Number *</FormLabel>
                       <FormControl>
-                        <Input 
+                        <Input
                           placeholder="+92 XXX XXXXXXX"
-                          {...field} 
+                          {...field}
                         />
                       </FormControl>
                       <FormMessage />
@@ -596,10 +752,10 @@ export default function FacilityForm({
                     <FormItem>
                       <FormLabel>Email *</FormLabel>
                       <FormControl>
-                        <Input 
+                        <Input
                           type="email"
                           placeholder="email@example.com"
-                          {...field} 
+                          {...field}
                         />
                       </FormControl>
                       <FormMessage />
@@ -639,7 +795,7 @@ export default function FacilityForm({
                         <FormLabel>Day</FormLabel>
                         <Select
                           value={hour.day}
-                          onValueChange={(value: FacilityFormData['openingHours'][0]['day']) => 
+                          onValueChange={(value: FacilityFormData['openingHours'][0]['day']) =>
                             updateOpeningHour(index, 'day', value)
                           }
                         >
@@ -648,10 +804,10 @@ export default function FacilityForm({
                           </SelectTrigger>
                           <SelectContent>
                             {DAYS.map(day => (
-                              <SelectItem 
-                                key={day} 
+                              <SelectItem
+                                key={day}
                                 value={day}
-                                disabled={openingHours.some((h, i) => 
+                                disabled={openingHours.some((h, i) =>
                                   i !== index && h.day === day
                                 )}
                               >
@@ -676,7 +832,7 @@ export default function FacilityForm({
                         <>
                           <div className="space-y-2">
                             <FormLabel>Open Time</FormLabel>
-                            <Input 
+                            <Input
                               type="time"
                               value={hour.openingTime}
                               onChange={(e) => updateOpeningHour(index, 'openingTime', e.target.value)}
@@ -685,7 +841,7 @@ export default function FacilityForm({
 
                           <div className="space-y-2">
                             <FormLabel>Close Time</FormLabel>
-                            <Input 
+                            <Input
                               type="time"
                               value={hour.closingTime}
                               onChange={(e) => updateOpeningHour(index, 'closingTime', e.target.value)}
@@ -738,7 +894,7 @@ export default function FacilityForm({
                     Required
                   </Badge>
                 </div>
-                
+
                 <div className="space-y-4">
                   <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
                     <Upload className="mx-auto h-12 w-12 text-gray-400" />
@@ -765,7 +921,7 @@ export default function FacilityForm({
                       Upload Images
                     </Button>
                   </div>
-                  
+
                   {imageFiles.length > 0 ? (
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
                       {imageFiles.map((image, index) => (
@@ -774,6 +930,10 @@ export default function FacilityForm({
                             src={getImageSrc(image)}
                             alt={`Facility image ${index + 1}`}
                             className="w-full h-32 object-cover"
+                            onError={(e) => {
+                              console.error('Error loading image:', image);
+                              e.currentTarget.src = 'https://via.placeholder.com/300x200?text=Image+Error';
+                            }}
                           />
                           <Button
                             type="button"
@@ -795,7 +955,7 @@ export default function FacilityForm({
                       No images uploaded yet
                     </p>
                   )}
-                  
+
                   {form.formState.errors.gallery?.images && (
                     <p className="text-sm font-medium text-destructive">
                       {form.formState.errors.gallery.images.message}
@@ -813,7 +973,7 @@ export default function FacilityForm({
                     Optional
                   </Badge>
                 </div>
-                
+
                 <div className="space-y-4">
                   <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
                     <Upload className="mx-auto h-12 w-12 text-gray-400" />
@@ -839,7 +999,7 @@ export default function FacilityForm({
                       Upload Video
                     </Button>
                   </div>
-                  
+
                   {/* Video Error Message */}
                   {videoError && (
                     <div className="flex items-center gap-2 text-sm text-destructive bg-destructive/10 p-3 rounded-lg">
@@ -847,7 +1007,7 @@ export default function FacilityForm({
                       <span>{videoError}</span>
                     </div>
                   )}
-                  
+
                   {introductoryVideoFile && (
                     <div className="relative rounded-lg overflow-hidden border mt-4">
                       <div className="p-4 bg-gray-50 flex items-center justify-between">
@@ -860,7 +1020,7 @@ export default function FacilityForm({
                             <p className="text-xs text-gray-500">
                               {typeof introductoryVideoFile === 'string'
                                 ? 'Existing video from server'
-                                : `${formatFileSize(introductoryVideoFile.size)} • ${introductoryVideoFile.type}`}
+                                : `${formatFileSize((introductoryVideoFile as File).size)} • ${(introductoryVideoFile as File).type}`}
                             </p>
                           </div>
                         </div>
@@ -874,18 +1034,18 @@ export default function FacilityForm({
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
-                      
+
                       {/* Video Preview */}
                       <div className="p-4">
-                        <video 
-                          controls 
-                          className="size-80 rounded-md"
+                        <video
+                          controls
+                          className="w-full rounded-md max-h-80"
                           preload="metadata"
                         >
-                          <source src={getVideoSrc(introductoryVideoFile)} 
-                            type={typeof introductoryVideoFile === 'string' 
-                              ? 'video/mp4' 
-                              : introductoryVideoFile.type} 
+                          <source src={getVideoSrc(introductoryVideoFile)}
+                            type={typeof introductoryVideoFile === 'string'
+                              ? 'video/mp4'
+                              : (introductoryVideoFile as File).type}
                           />
                           Your browser does not support the video tag.
                         </video>
@@ -911,7 +1071,7 @@ export default function FacilityForm({
                 <ArrowLeft className="h-4 w-4" />
                 Go Back
               </Button>
-              
+
               <Button
                 type="button"
                 variant="outline"
@@ -922,7 +1082,7 @@ export default function FacilityForm({
                 Reset Form
               </Button>
             </div>
-            
+
             <div className="flex space-x-4">
               {onCancel && (
                 <Button
@@ -935,9 +1095,9 @@ export default function FacilityForm({
                   Cancel
                 </Button>
               )}
-              
-              <Button 
-                type="submit" 
+
+              <Button
+                type="submit"
                 disabled={isLoading || !validateImages() || !hasOpenDays() || !!videoError}
                 size="lg"
                 className="min-w-[150px]"

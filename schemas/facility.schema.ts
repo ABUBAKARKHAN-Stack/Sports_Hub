@@ -57,5 +57,5 @@ export const createFacilitySchema = z.object({
       (hours) => hours.some(hour => !hour.isClosed),
       "At least one day must be open"
     ),
-  gallery: gallerySchema,
+  gallery: gallerySchema.optional(),
 });

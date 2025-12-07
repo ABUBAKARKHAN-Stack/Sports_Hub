@@ -56,7 +56,7 @@ export interface FacilityContextType {
   //* CRUD Actions
   getFacilities: (params?: GetFacilitiesParams) => Promise<void>;
   getFacilityById: (id: string) => Promise<void>;
-  createFacility: (data: CreateFacilityFormData) => Promise<IFacility>;
+  createFacility: (data: FormData) => Promise<IFacility>;
   updateFacility: (id: string, data: UpdateFacilityFormData) => Promise<IFacility>;
   deleteFacility: (id: string) => Promise<void>;
   updateFacilityStatus: (id: string, status: FacilityStatusEnum) => Promise<void>;

@@ -6,9 +6,7 @@ import { IFacility, FacilityStatusEnum } from "@/types/main.types";
 import axiosInstance from "@/lib/axios";
 import { ApiResponse } from "@/utils/ApiResponse";
 import { useToasts } from "@/hooks/toastNotifications";
-import { UseFormReturn } from "react-hook-form";
-import z from "zod";
-import { createFacilitySchema } from "@/schemas/facility.schema";
+
 
 const initialState: FacilityState = {
   facilities: [],
@@ -116,21 +114,11 @@ export const FacilityProvider: React.FC<FacilityProviderProps> = ({ children }) 
     } finally { setLoading(false); }
   };
 
-  const createFacility = async (data: CreateFacilityFormData): Promise<IFacility> => {        
+  const createFacility = async (data: FormData): Promise<IFacility> => {        
     try {
       setLoading(true); clearError();
-      const formData = new FormData();
-
-      formData.append("name", data.name);
-      formData.append("description", data.description || "");
-      formData.append("location", JSON.stringify(data.location));
-      formData.append("contact", JSON.stringify(data.contact));
-      formData.append("openingHours", JSON.stringify(data.openingHours));
-
-      data.gallery.images.forEach(file => formData.append("images", file));
-      if (data.gallery.introductoryVideo) formData.append("introductoryVideo", data.gallery.introductoryVideo);
-
-      const res = await axiosInstance.post<ApiResponse<IFacility>>("/admin/facilities", formData, {
+   
+      const res = await axiosInstance.post<ApiResponse<IFacility>>("/admin/facilities", data, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
@@ -148,14 +136,18 @@ export const FacilityProvider: React.FC<FacilityProviderProps> = ({ children }) 
   };
 
   const updateFacility = async (id: string, data: UpdateFacilityFormData): Promise<IFacility> => {
+    
     try {
       setLoading(true); clearError();
       const res = await axiosInstance.put<ApiResponse<IFacility>>(`/admin/facilities/${id}`, data);
       if (!res.data.success) throw new Error(res.data.message);
+      successToast("Facility updated successfully");
       dispatch({ type: "UPDATE_FACILITY", payload: res.data.data! });
       return res.data.data!;
     } catch (err: any) {
-      setError(err.response?.data?.message || err.message || "Failed to update facility");
+      const errMsg = err.response?.data?.message || err.message || "Failed to update facility"
+      errorToast(errMsg);
+      setError(errMsg);
       console.error(err);
       throw err;
     } finally { setLoading(false); }
