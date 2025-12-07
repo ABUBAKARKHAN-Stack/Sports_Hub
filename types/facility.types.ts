@@ -1,6 +1,10 @@
-import { FacilityStatusEnum, IFacility } from './main.types';
+import { z } from "zod";
+import { FacilityStatusEnum, IFacility } from "./main.types";
+import { createFacilitySchema } from "@/schemas/facility.schema";
 
-//* Facility context state
+//* --------------------
+// Facility State
+//* --------------------
 export interface FacilityState {
   facilities: IFacility[];
   currentFacility: IFacility | null;
@@ -14,52 +18,28 @@ export interface FacilityState {
   };
 }
 
-//* Facility actions
+//* --------------------
+// Facility Actions
+//* --------------------
 export type FacilityAction =
-  | { type: 'SET_LOADING'; payload: boolean }
-  | { type: 'SET_ERROR'; payload: string | null }
-  | { type: 'SET_FACILITIES'; payload: { facilities: IFacility[]; total: number; page: number; limit: number } }
-  | { type: 'SET_FACILITY'; payload: IFacility | null }
-  | { type: 'ADD_FACILITY'; payload: IFacility }
-  | { type: 'UPDATE_FACILITY'; payload: IFacility }
-  | { type: 'DELETE_FACILITY'; payload: string } // facilityId
-  | { type: 'UPDATE_FACILITY_STATUS'; payload: { facilityId: string; status: FacilityStatusEnum } };
+  | { type: "SET_LOADING"; payload: boolean }
+  | { type: "SET_ERROR"; payload: string | null }
+  | { type: "SET_FACILITIES"; payload: { facilities: IFacility[]; total: number; page: number; limit: number } }
+  | { type: "SET_FACILITY"; payload: IFacility | null }
+  | { type: "ADD_FACILITY"; payload: IFacility }
+  | { type: "UPDATE_FACILITY"; payload: IFacility }
+  | { type: "DELETE_FACILITY"; payload: string } // facilityId
+  | { type: "UPDATE_FACILITY_STATUS"; payload: { facilityId: string; status: FacilityStatusEnum } };
 
-//* Create facility form data
-export interface CreateFacilityFormData {
-  name: string;
-  description?: string;
-  location: {
-    address: string;
-    city: string;
-    coordinates?: {
-      lat: number;
-      lng: number;
-    };
-  };
-  contact: {
-    phone: string;
-    email: string;
-  };
-  openingHours: Array<{
-    day: 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday' | 'Sunday';
-    openingTime: string;
-    closingTime: string;
-    isClosed: boolean;
-  }>;
-  images?: string[];
-  documents?: Array<{
-    type: string;
-    url: string;
-  }>;
-}
+//* --------------------
+// Form Data
+//* --------------------
+export type CreateFacilityFormData = z.infer<typeof createFacilitySchema>;
+export type UpdateFacilityFormData = Partial<CreateFacilityFormData>;
 
-//* Update facility form data
-export interface UpdateFacilityFormData extends Partial<CreateFacilityFormData> {
-  status?: FacilityStatusEnum;
-}
-
-//* API response types
+//* --------------------
+// API Response Types
+//* --------------------
 export interface FacilitiesResponse {
   data: IFacility[];
   total: number;
@@ -68,10 +48,12 @@ export interface FacilitiesResponse {
   totalPages: number;
 }
 
-//* Facility context type
+//* --------------------
+// Context Type
+//* --------------------
 export interface FacilityContextType {
   state: FacilityState;
-  //* Actions
+  //* CRUD Actions
   getFacilities: (params?: GetFacilitiesParams) => Promise<void>;
   getFacilityById: (id: string) => Promise<void>;
   createFacility: (data: CreateFacilityFormData) => Promise<IFacility>;
@@ -82,7 +64,9 @@ export interface FacilityContextType {
   clearError: () => void;
 }
 
-//* Get facilities params
+//* --------------------
+// Query Params
+//* --------------------
 export interface GetFacilitiesParams {
   page?: number;
   limit?: number;

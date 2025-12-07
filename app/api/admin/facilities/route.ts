@@ -7,6 +7,7 @@ import { Facility } from '@/models/facility.model';
 import { userModel } from '@/models/user.model';
 import { FacilityStatusEnum } from '@/types/main.types';
 import { getToken } from 'next-auth/jwt';
+import { uploadToCloudinary } from '@/lib/uploadToCloudinary';
 
 //* GET all facilities for admin
 async function getFacilities(req: NextRequest) {
@@ -14,7 +15,7 @@ async function getFacilities(req: NextRequest) {
         await connectDb();
 
         const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
-        const adminId = token?.sub; // Changed from userId to sub
+        const adminId = token?.sub;      
 
         if (!adminId) {
             return NextResponse.json(
@@ -81,71 +82,96 @@ async function createFacility(req: NextRequest) {
     try {
         await connectDb();
 
-        const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });        
-        const adminId = token?.sub; // Changed from userId to sub
+        const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+        const adminId = token?.sub;
 
         if (!adminId) {
-            return NextResponse.json(
-                new ApiError(401, "Unauthorized"),
-                { status: 401 }
-            );
+            return NextResponse.json(new ApiError(401, "Unauthorized"), { status: 401 });
         }
 
-        const body = await req.json();
 
-        //* Validate required fields
-        const requiredFields = ['name', 'location', 'contact', 'openingHours'];
-        const missingFields = requiredFields.filter(field => !body[field]);
+        //* Read FormData instead of JSON
+        const formData = await req.formData();
 
-        if (missingFields.length > 0) {
+
+        //* Extract text fields
+        const name = formData.get("name") as string;
+        const location = JSON.parse(formData.get("location") as string);
+        const contact = JSON.parse(formData.get("contact") as string);
+        const openingHours = JSON.parse(formData.get("openingHours") as string);
+
+        const required = [name, location, contact, openingHours];
+        if (required.some((v) => !v)) {
             return NextResponse.json(
-                new ApiError(400, `Missing required fields: ${missingFields.join(', ')}`),
+                new ApiError(400, "Missing required fields"),
                 { status: 400 }
             );
         }
 
-        //* Check if admin exists
+        //* Check admin exists
         const admin = await userModel.findById(adminId);
         if (!admin) {
-            return NextResponse.json(
-                new ApiError(404, "Admin not found"),
-                { status: 404 }
-            );
+            return NextResponse.json(new ApiError(404, "Admin not found"), { status: 404 });
         }
 
-        const facilityData = {
-            ...body,
+        //* CLOUDINARY UPLOAD SECTION
+
+        const galleryImages: string[] = [];
+        let galleryVideo: string = "";
+
+        //* Upload multiple images
+        const images = formData.getAll("images") as File[];
+        for (const file of images) {
+            const buffer = Buffer.from(await file.arrayBuffer());
+            const uploaded = await uploadToCloudinary(buffer, "facilities/gallery", "image");
+            console.log("Image Uploaded On Cloudinary", uploaded.public_id);
+            galleryImages.push(uploaded.secure_url);
+        }
+
+        //* Upload intro video
+        const videoFile = formData.get("introductoryVideo") as File | null;
+        if (videoFile) {
+            const buffer = Buffer.from(await videoFile.arrayBuffer());
+            const uploadedVideo = await uploadToCloudinary(
+                buffer,
+                "facilities/videos",
+                "video"
+            );
+            console.log("Video Uploaded On Cloudinary", uploadedVideo.public_id);
+            galleryVideo = uploadedVideo.secure_url;
+        }
+
+        //* Create Facility
+
+        const newFacility = await Facility.create({
+            name,
+            location,
+            contact,
+            openingHours,
             adminId,
             status: FacilityStatusEnum.PENDING,
             services: [],
-            images: body.images || [],
-            documents: body.documents || []
-        };
-
-        const newFacility = new Facility(facilityData);
-        await newFacility.save();
+            gallery: {
+                images: galleryImages,
+                introductoryVideo: galleryVideo
+            }
+        });
 
         return NextResponse.json(
-            new ApiResponse(201, "Facility created successfully. Waiting for super admin approval.", newFacility),
+            new ApiResponse(201, "Facility created successfully", newFacility),
             { status: 201 }
         );
 
     } catch (error: any) {
         console.error("Create facility error:", error);
 
-        if (error.name === 'ValidationError') {
-            return NextResponse.json(
-                new ApiError(400, "Validation error", error.errors),
-                { status: 400 }
-            );
-        }
-
         return NextResponse.json(
-            new ApiError(500, "Failed to create facility", error.message),
+            new ApiError(500, error.message || "Failed to create facility"),
             { status: 500 }
         );
     }
 }
 
+
 export const GET = withAdmin(getFacilities);
-export const POST = withAdmin(createFacility);
+export const POST = withAdmin(createFacility)

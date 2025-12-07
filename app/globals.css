@@ -39,7 +39,8 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
-  --font-outfit: var(--font-outfit)
+  --font-outfit: var(--font-outfit);
+  --animate-pulse-slow: pulse 6s ease-in-out infinite;
 }
 
 :root {

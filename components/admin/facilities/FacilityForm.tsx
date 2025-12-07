@@ -1,0 +1,827 @@
+'use client';
+
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { createFacilitySchema } from '@/schemas/facility.schema';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Switch } from '@/components/ui/switch';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
+import { Loader2, Plus, Trash2, Upload, MapPin, Phone, Clock, ImageIcon, VideoIcon, AlertCircle, ArrowLeft } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+
+type FacilityFormData = {
+  name: string;
+  description: string | null;
+  location: {
+    address: string;
+    city: string;
+    coordinates?: {
+      lat: number;
+      lng: number;
+    };
+  };
+  contact: {
+    phone: string;
+    email: string;
+  };
+  openingHours: {
+    day: 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday' | 'Sunday';
+    openingTime: string;
+    closingTime: string;
+    isClosed?: boolean;
+  }[];
+  gallery: {
+    images: File[];
+    introductoryVideo?: File | null;
+  };
+};
+
+const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'] as const;
+
+// Constants for file validation
+const MAX_VIDEO_SIZE = 10 * 1024 * 1024; // 10MB in bytes
+const ALLOWED_VIDEO_TYPES = ['video/mp4', 'video/mov', 'video/avi', 'video/webm'];
+
+const defaultFormValues: FacilityFormData = {
+  name: '',
+  description: null,
+  location: {
+    address: '',
+    city: '',
+    coordinates: {
+      lat: 0,
+      lng: 0,
+    },
+  },
+  contact: {
+    phone: '',
+    email: '',
+  },
+  openingHours: DAYS.map(day => ({
+    day,
+    openingTime: '09:00',
+    closingTime: '17:00',
+    isClosed: false,
+  })),
+  gallery: {
+    images: [],
+    introductoryVideo: null,
+  },
+};
+
+interface FacilityFormProps {
+  initialData?: Partial<FacilityFormData>;
+  onSubmit: (data: FacilityFormData) => Promise<void>;
+  onCancel?: () => void;
+  isLoading?: boolean;
+  onSuccess?: () => void; // Callback for successful submission
+  goBackUrl?: string; // URL for Go Back button
+}
+
+export default function FacilityForm({ 
+  initialData, 
+  onSubmit, 
+  onCancel, 
+  isLoading = false,
+  onSuccess,
+  goBackUrl
+}: FacilityFormProps) {
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
+  const [introductoryVideoFile, setIntroductoryVideoFile] = useState<File | null>(null);
+  const [videoError, setVideoError] = useState<string | null>(null);
+  const router = useRouter();
+  
+  const form = useForm<FacilityFormData>({
+    resolver: zodResolver(createFacilitySchema as any),
+    defaultValues: defaultFormValues,
+  });
+
+  const openingHours = form.watch('openingHours');
+
+  useEffect(() => {
+    if (initialData) {
+      const mergedData: FacilityFormData = {
+        ...defaultFormValues,
+        ...initialData,
+        location: {
+          ...defaultFormValues.location,
+          ...initialData?.location,
+          coordinates: {
+            lat: initialData?.location?.coordinates?.lat ?? defaultFormValues.location.coordinates!.lat,
+            lng: initialData?.location?.coordinates?.lng ?? defaultFormValues.location.coordinates!.lng,
+          },
+        },
+        contact: {
+          ...defaultFormValues.contact,
+          ...initialData?.contact,
+        },
+        openingHours: initialData?.openingHours?.length 
+          ? initialData.openingHours.map(hour => ({
+              ...hour,
+              isClosed: hour.isClosed ?? false,
+              openingTime: hour.openingTime || '09:00',
+              closingTime: hour.closingTime || '17:00',
+            }))
+          : defaultFormValues.openingHours,
+        gallery: {
+          images: (initialData?.gallery?.images as File[]) || defaultFormValues.gallery.images,
+          introductoryVideo: (initialData?.gallery?.introductoryVideo as File) || null,
+        },
+        description: initialData?.description || null,
+      };
+
+      form.reset(mergedData);
+      
+      if (initialData.gallery?.images && Array.isArray(initialData.gallery.images)) {
+        setImageFiles(initialData.gallery.images as File[]);
+      }
+      
+      if (initialData.gallery?.introductoryVideo) {
+        setIntroductoryVideoFile(initialData.gallery.introductoryVideo as File);
+      }
+    }
+  }, [initialData, form]);
+
+  const handleSubmit = async (data: FacilityFormData) => {
+    try {
+      const processedData = {
+        ...data,
+        openingHours: data.openingHours.map(hour => ({
+          ...hour,
+          isClosed: hour.isClosed ?? false,
+          openingTime: hour.isClosed ? '' : hour.openingTime,
+          closingTime: hour.isClosed ? '' : hour.closingTime,
+        })),
+      };
+      
+      await onSubmit(processedData);
+      
+      // Reset form on success
+      resetForm();
+      
+      // Call success callback if provided
+      if (onSuccess) {
+        onSuccess();
+      }
+    } catch (error) {
+      // Error handling is done by the parent component
+      console.error('Form submission error:', error);
+    }
+  };
+
+  const resetForm = () => {
+    form.reset(defaultFormValues);
+    setImageFiles([]);
+    setIntroductoryVideoFile(null);
+    setVideoError(null);
+  };
+
+  const handleGoBack = () => {
+    if (goBackUrl) {
+      router.push(goBackUrl);
+    } else if (onCancel) {
+      onCancel();
+    } else {
+      router.back();
+    }
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+
+    const newFiles = Array.from(files);
+    const updatedFiles = [...imageFiles, ...newFiles];
+    setImageFiles(updatedFiles);
+    
+    form.setValue('gallery.images', updatedFiles, { shouldValidate: true });
+  };
+
+  const removeImage = (index: number) => {
+    const newImages = imageFiles.filter((_, i) => i !== index);
+    setImageFiles(newImages);
+    form.setValue('gallery.images', newImages, { shouldValidate: true });
+  };
+
+  const handleVideoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Reset previous error
+    setVideoError(null);
+
+    // Check file type
+    if (!ALLOWED_VIDEO_TYPES.includes(file.type)) {
+      setVideoError('Invalid file type. Please upload MP4, MOV, AVI, or WebM files.');
+      return;
+    }
+
+    // Check file size (max 10MB)
+    if (file.size > MAX_VIDEO_SIZE) {
+      const sizeInMB = (file.size / (1024 * 1024)).toFixed(2);
+      setVideoError(`File size (${sizeInMB} MB) exceeds maximum limit of 10 MB.`);
+      return;
+    }
+
+    setIntroductoryVideoFile(file);
+    form.setValue('gallery.introductoryVideo', file, { shouldValidate: true });
+  };
+
+  const removeVideo = () => {
+    setIntroductoryVideoFile(null);
+    setVideoError(null);
+    form.setValue('gallery.introductoryVideo', null, { shouldValidate: true });
+  };
+
+  const addOpeningHour = () => {
+    const currentHours = form.getValues('openingHours');
+    const availableDays = DAYS.filter(day => 
+      !currentHours.some(hour => hour.day === day)
+    );
+    
+    if (availableDays.length > 0) {
+      const newHours = [
+        ...currentHours,
+        {
+          day: availableDays[0],
+          openingTime: '09:00',
+          closingTime: '17:00',
+          isClosed: false,
+        },
+      ];
+      form.setValue('openingHours', newHours, { shouldValidate: true });
+    }
+  };
+
+  const removeOpeningHour = (index: number) => {
+    const currentHours = form.getValues('openingHours');
+    if (currentHours.length <= 1) return;
+    
+    const newHours = currentHours.filter((_, i) => i !== index);
+    form.setValue('openingHours', newHours, { shouldValidate: true });
+  };
+
+  const updateOpeningHour = (
+    index: number, 
+    field: keyof FacilityFormData['openingHours'][0], 
+    value: any
+  ) => {
+    const currentHours = form.getValues('openingHours');
+    const updatedHours = [...currentHours];
+    
+    if (field === 'day') {
+      updatedHours[index].day = value as typeof DAYS[number];
+    } else if (field === 'openingTime') {
+      updatedHours[index].openingTime = value as string;
+    } else if (field === 'closingTime') {
+      updatedHours[index].closingTime = value as string;
+    } else if (field === 'isClosed') {
+      updatedHours[index].isClosed = value as boolean;
+      
+      if (value === true) {
+        updatedHours[index].openingTime = '';
+        updatedHours[index].closingTime = '';
+      } else {
+        updatedHours[index].openingTime = '09:00';
+        updatedHours[index].closingTime = '17:00';
+      }
+    }
+    
+    form.setValue('openingHours', updatedHours, { shouldValidate: true });
+  };
+
+  const validateImages = () => {
+    const images = form.getValues('gallery.images');
+    return images && images.length > 0;
+  };
+
+  const hasOpenDays = () => {
+    return openingHours.some(hour => !hour.isClosed);
+  };
+
+  const formatFileSize = (bytes: number): string => {
+    if (bytes < 1024) return bytes + ' bytes';
+    else if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+    else return (bytes / 1048576).toFixed(1) + ' MB';
+  };  
+
+  return (
+    <div className="space-y-6">
+      {/* Go Back Button */}
+      <div>
+        <Button
+          type="button"
+          variant="ghost"
+          onClick={handleGoBack}
+          className="gap-2 px-0 hover:bg-transparent"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Go Back
+        </Button>
+      </div>
+
+      {/* Form */}
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
+          
+          {/* Basic Information Card */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2">
+                <MapPin className="h-5 w-5" />
+                Basic Information
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Facility Name *</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Enter facility name" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="location.city"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>City *</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Enter city" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Description (Optional)</FormLabel>
+                    <FormControl>
+                      <Textarea 
+                        placeholder="Describe your facility"
+                        className="min-h-[100px] resize-none"
+                        value={field.value || ''}
+                        onChange={(e) => field.onChange(e.target.value || null)}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <FormField
+                  control={form.control}
+                  name="location.address"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Address *</FormLabel>
+                      <FormControl>
+                        <Textarea 
+                          placeholder="Enter complete address"
+                          className="min-h-20 resize-none"
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <FormLabel>Latitude (Optional)</FormLabel>
+                    <Input 
+                      type="number" 
+                      step="any"
+                      placeholder="e.g., 33.6844"
+                      value={form.watch('location.coordinates.lat') || ''}
+                      onChange={e => form.setValue('location.coordinates.lat', 
+                        e.target.value === '' ? 0 : parseFloat(e.target.value), 
+                        { shouldValidate: true }
+                      )}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <FormLabel>Longitude (Optional)</FormLabel>
+                    <Input 
+                      type="number" 
+                      step="any"
+                      placeholder="e.g., 73.0479"
+                      value={form.watch('location.coordinates.lng') || ''}
+                      onChange={e => form.setValue('location.coordinates.lng', 
+                        e.target.value === '' ? 0 : parseFloat(e.target.value), 
+                        { shouldValidate: true }
+                      )}
+                    />
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Contact Information Card */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2">
+                <Phone className="h-5 w-5" />
+                Contact Information
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <FormField
+                  control={form.control}
+                  name="contact.phone"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Phone Number *</FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="+92 XXX XXXXXXX"
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="contact.email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Email *</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="email"
+                          placeholder="email@example.com"
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Opening Hours Card */}
+          <Card>
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2">
+                  <Clock className="h-5 w-5" />
+                  Opening Hours
+                </CardTitle>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={addOpeningHour}
+                  disabled={openingHours.length >= 7}
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Day
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {openingHours.map((hour, index) => (
+                  <div key={`${hour.day}-${index}`} className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 bg-gray-50 rounded-lg">
+                    <div className="flex-1 grid grid-cols-1 sm:grid-cols-4 gap-4">
+                      <div className="space-y-2">
+                        <FormLabel>Day</FormLabel>
+                        <Select
+                          value={hour.day}
+                          onValueChange={(value: FacilityFormData['openingHours'][0]['day']) => 
+                            updateOpeningHour(index, 'day', value)
+                          }
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select day" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {DAYS.map(day => (
+                              <SelectItem 
+                                key={day} 
+                                value={day}
+                                disabled={openingHours.some((h, i) => 
+                                  i !== index && h.day === day
+                                )}
+                              >
+                                {day}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="flex items-center space-x-3 pt-8">
+                        <Switch
+                          checked={hour.isClosed || false}
+                          onCheckedChange={(checked) => updateOpeningHour(index, 'isClosed', checked)}
+                        />
+                        <FormLabel className="font-normal cursor-pointer">
+                          Closed
+                        </FormLabel>
+                      </div>
+
+                      {!hour.isClosed && (
+                        <>
+                          <div className="space-y-2">
+                            <FormLabel>Open Time</FormLabel>
+                            <Input 
+                              type="time"
+                              value={hour.openingTime}
+                              onChange={(e) => updateOpeningHour(index, 'openingTime', e.target.value)}
+                            />
+                          </div>
+
+                          <div className="space-y-2">
+                            <FormLabel>Close Time</FormLabel>
+                            <Input 
+                              type="time"
+                              value={hour.closingTime}
+                              onChange={(e) => updateOpeningHour(index, 'closingTime', e.target.value)}
+                            />
+                          </div>
+                        </>
+                      )}
+                    </div>
+
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => removeOpeningHour(index)}
+                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                      disabled={openingHours.length <= 1}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+
+                {!hasOpenDays() && (
+                  <Badge variant="outline" className="w-full justify-center py-2 border-red-200 text-red-600">
+                    At least one day must be open
+                  </Badge>
+                )}
+
+                {form.formState.errors.openingHours && (
+                  <p className="text-sm font-medium text-destructive">
+                    {form.formState.errors.openingHours.message}
+                  </p>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Gallery Card */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle>Gallery</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-8">
+              {/* Images Section */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <ImageIcon className="h-5 w-5" />
+                  <h3 className="font-medium">Images</h3>
+                  <Badge variant="destructive" className="ml-2">
+                    Required
+                  </Badge>
+                </div>
+                
+                <div className="space-y-4">
+                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
+                    <Upload className="mx-auto h-12 w-12 text-gray-400" />
+                    <p className="mt-2 text-sm text-gray-600">
+                      Upload facility images (JPEG, PNG, WebP)
+                    </p>
+                    <p className="text-xs text-gray-500 mb-4">
+                      Recommended size: 1200x800px
+                    </p>
+                    <Input
+                      type="file"
+                      multiple
+                      accept="image/*"
+                      className="hidden"
+                      id="image-upload"
+                      onChange={handleImageUpload}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => document.getElementById('image-upload')?.click()}
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      Upload Images
+                    </Button>
+                  </div>
+                  
+                  {imageFiles.length > 0 ? (
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
+                      {imageFiles.map((image, index) => (
+                        <div key={index} className="relative group rounded-lg overflow-hidden border">
+                          <img
+                            src={URL.createObjectURL(image)}
+                            alt={`Facility image ${index + 1}`}
+                            className="w-full h-32 object-cover"
+                          />
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="destructive"
+                            className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8 p-0"
+                            onClick={() => removeImage(index)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                          <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white text-xs p-1">
+                            Image {index + 1}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-gray-500 mt-2">
+                      No images uploaded yet
+                    </p>
+                  )}
+                  
+                  {form.formState.errors.gallery?.images && (
+                    <p className="text-sm font-medium text-destructive">
+                      {form.formState.errors.gallery.images.message}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* Video Section */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <VideoIcon className="h-5 w-5" />
+                  <h3 className="font-medium">Introductory Video</h3>
+                  <Badge variant="outline" className="ml-2">
+                    Optional
+                  </Badge>
+                </div>
+                
+                <div className="space-y-4">
+                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
+                    <Upload className="mx-auto h-12 w-12 text-gray-400" />
+                    <p className="mt-2 text-sm text-gray-600">
+                      Upload introductory video (MP4, MOV, AVI, WebM)
+                    </p>
+                    <p className="text-xs text-gray-500 mb-2">
+                      Maximum size: 10MB
+                    </p>
+                    <Input
+                      type="file"
+                      accept="video/mp4,video/mov,video/avi,video/webm"
+                      className="hidden"
+                      id="video-upload"
+                      onChange={handleVideoUpload}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => document.getElementById('video-upload')?.click()}
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      Upload Video
+                    </Button>
+                  </div>
+                  
+                  {/* Video Error Message */}
+                  {videoError && (
+                    <div className="flex items-center gap-2 text-sm text-destructive bg-destructive/10 p-3 rounded-lg">
+                      <AlertCircle className="h-4 w-4" />
+                      <span>{videoError}</span>
+                    </div>
+                  )}
+                  
+                  {introductoryVideoFile && (
+                    <div className="relative rounded-lg overflow-hidden border mt-4">
+                      <div className="p-4 bg-gray-50 flex items-center justify-between">
+                        <div className="flex items-center space-x-3">
+                          <div className="h-10 w-10 bg-red-100 rounded-lg flex items-center justify-center">
+                            <span className="text-red-600 font-medium">VID</span>
+                          </div>
+                          <div>
+                            <p className="font-medium">{introductoryVideoFile.name}</p>
+                            <p className="text-xs text-gray-500">
+                              {formatFileSize(introductoryVideoFile.size)} • {introductoryVideoFile.type}
+                            </p>
+                          </div>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                          onClick={removeVideo}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Form Actions */}
+          <div className="flex justify-between pt-4 border-t">
+            <div className="flex space-x-4">
+              {/* Go Back Button (alternative to top button) */}
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleGoBack}
+                disabled={isLoading}
+                size="lg"
+                className="gap-2"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                Go Back
+              </Button>
+              
+              {/* Reset Form Button */}
+              <Button
+                type="button"
+                variant="outline"
+                onClick={resetForm}
+                disabled={isLoading}
+                size="lg"
+              >
+                Reset Form
+              </Button>
+            </div>
+            
+            <div className="flex space-x-4">
+              {onCancel && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={onCancel}
+                  disabled={isLoading}
+                  size="lg"
+                >
+                  Cancel
+                </Button>
+              )}
+              
+              <Button 
+                type="submit" 
+                disabled={isLoading || !validateImages() || !hasOpenDays() || !!videoError}
+                size="lg"
+                className="min-w-[150px]"
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Saving...
+                  </>
+                ) : initialData ? 'Update Facility' : 'Create Facility'}
+              </Button>
+            </div>
+          </div>
+        </form>
+      </Form>
+    </div>
+  );
+}

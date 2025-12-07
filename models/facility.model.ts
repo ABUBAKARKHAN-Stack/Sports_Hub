@@ -5,19 +5,19 @@ type FacilityModelType = IFacility & Document;
 
 const FacilitySchema = new Schema<FacilityModelType>(
   {
-    name: { 
-      type: String, 
-      required: true, 
-      trim: true 
+    name: {
+      type: String,
+      required: true,
+      trim: true
     },
-    description: { 
-      type: String, 
-      default: "" 
+    description: {
+      type: String,
+      default: ""
     },
-    adminId: { 
-      type: Schema.Types.ObjectId, 
-      ref: "User", 
-      required: true 
+    adminId: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true
     },
     location: {
       address: { type: String, default: "" },
@@ -32,32 +32,34 @@ const FacilitySchema = new Schema<FacilityModelType>(
       email: { type: String, default: "" }
     },
     openingHours: [{
-      day: { 
-        type: String, 
+      day: {
+        type: String,
         enum: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
-        required: true 
+        required: true
       },
-      openingTime: { type: String, required: true },
-      closingTime: { type: String, required: true },
+      openingTime: { type: String, default: null },
+      closingTime: { type: String, default:null },
       isClosed: { type: Boolean, default: false }
     }],
-    services: [{ 
-      type: Schema.Types.ObjectId, 
-      ref: "Service" 
+    services: [{
+      type: Schema.Types.ObjectId,
+      ref: "Service"
     }],
-    status: { 
-      type: String, 
-      enum: Object.values(FacilityStatusEnum), 
-      default: FacilityStatusEnum.PENDING 
+    status: {
+      type: String,
+      enum: Object.values(FacilityStatusEnum),
+      default: FacilityStatusEnum.PENDING
     },
-    images: [{ 
-      type: String, 
-      default: [] 
-    }],
-    documents: [{
-      type: { type: String, required: true },
-      url: { type: String, required: true }
-    }]
+    gallery: {
+      images: [{
+        type: String,
+        default: [],
+      }],
+      introductoryVideo: {
+        type: String,
+        default: ""
+      },
+    }
   },
   { timestamps: true }
 );
@@ -67,5 +69,5 @@ FacilitySchema.index({ adminId: 1 });
 FacilitySchema.index({ status: 1 });
 FacilitySchema.index({ "location.city": 1 });
 
-export const Facility = (models?.Facility as Model<FacilityModelType>) || 
+export const Facility = (models?.Facility as Model<FacilityModelType>) ||
   model<FacilityModelType>("Facility", FacilitySchema);

@@ -73,11 +73,10 @@ export interface IFacility {
     }[];
     services: Types.ObjectId[];
     status: FacilityStatusEnum;
-    images: string[];
-    documents: {
-        type: string;
-        url: string;
-    }[];
+    gallery: {
+        images: string[];
+        introductoryVideo: string;
+    }
     createdAt: Date;
     updatedAt: Date;
 }
@@ -99,18 +98,18 @@ export interface IService {
 }
 
 export enum BookingStatusEnum {
-  PENDING = 'pending',
-  CONFIRMED = 'confirmed',
-  CANCELLED = 'cancelled',
-  COMPLETED = 'completed'
+    PENDING = 'pending',
+    CONFIRMED = 'confirmed',
+    CANCELLED = 'cancelled',
+    COMPLETED = 'completed'
 }
 
 
 export enum PaymentStatusEnum {
-  PENDING = 'pending',
-  COMPLETED = 'completed',
-  FAILED = 'failed',
-  REFUNDED = 'refunded',
+    PENDING = 'pending',
+    COMPLETED = 'completed',
+    FAILED = 'failed',
+    REFUNDED = 'refunded',
 }
 
 
@@ -154,9 +153,9 @@ export interface ITimeSlot {
 }
 
 export enum ReviewStatusEnum {
-  PENDING = 'pending',
-  APPROVED = 'approved',
-  REJECTED = 'rejected'
+    PENDING = 'pending',
+    APPROVED = 'approved',
+    REJECTED = 'rejected'
 }
 
 
@@ -180,9 +179,9 @@ export interface IReview {
 }
 
 export enum PaymentMethodEnum {
-  EASYPAISA = 'easypaisa',
-  JAZZCASH = 'jazzcash',
-  CASH = 'cash',
+    EASYPAISA = 'easypaisa',
+    JAZZCASH = 'jazzcash',
+    CASH = 'cash',
 }
 
 

@@ -1,6 +1,12 @@
 import mongoose from "mongoose";
 import { DatabaseConnectionObject } from "@/types/main.types";
-
+import "@/models/service.model";
+import "@/models/facility.model";
+import '@/models/booking.model';
+import '@/models/payment.model'
+import "@/models/review.model"
+import "@/models/user.model"
+import '@/models/timeslot.model'
 
 const connection: DatabaseConnectionObject = {
 
