@@ -8,7 +8,7 @@ import { UserRoles, FacilityStatusEnum } from '@/types/main.types';
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectDb();
@@ -24,7 +24,7 @@ export async function PATCH(
       );
     }
 
-    const { id } = params;
+    const { id } = await params;
     const { status } = await req.json();
 
     //* Validate status

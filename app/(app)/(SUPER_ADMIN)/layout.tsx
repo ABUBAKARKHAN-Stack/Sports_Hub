@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { FacilityProvider } from '@/context/admin/FacilityContext';
+import { SuperAdminFacilityProvider } from '@/context/super-admin/SuperAdminFacilityContext';
 import Sidebar from '@/components/layout/Header/Sidebar';
 import { Button } from "@/components/ui/button";
 import { Menu } from "lucide-react";
@@ -14,7 +14,7 @@ export default function SuperAdminLayout({
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   return (
-    <FacilityProvider>
+    <SuperAdminFacilityProvider>
       <div className="flex min-h-screen">
         {/* Only render ONE Sidebar component */}
         <Sidebar 
@@ -39,6 +39,6 @@ export default function SuperAdminLayout({
           {children}
         </main>
       </div>
-    </FacilityProvider>
+    </SuperAdminFacilityProvider>
   );
 }

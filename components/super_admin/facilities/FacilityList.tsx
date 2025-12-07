@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { useFacility } from '@/context/admin/FacilityContext';
 import { FacilityStatusEnum } from '@/types/main.types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Loader2, Search, Plus, Edit, Trash2, Eye, MapPin, Phone, Mail, Calendar, Filter, MoreVertical, ChevronUp } from 'lucide-react';
+import { Loader2, Search, Eye, MapPin, Phone, Mail, Calendar, Filter, MoreVertical, ChevronUp } from 'lucide-react';
 import Link from 'next/link';
 import { format } from 'date-fns';
 import {
@@ -19,9 +18,10 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
+import { useSuperAdminFacility } from '@/context/super-admin/SuperAdminFacilityContext';
 
 const FacilityList: React.FC = () => {
-  const { state, getFacilities, deleteFacility } = useFacility();
+  const { state, getFacilities } = useSuperAdminFacility();
 
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -93,16 +93,6 @@ const FacilityList: React.FC = () => {
     }, 100);
   };
 
-  const handleDelete = async (id: string) => {
-    if (confirm('Are you sure you want to delete this facility?')) {
-      try {
-        await deleteFacility(id);
-      } catch (error) {
-        console.error('Failed to delete facility:', error);
-      }
-    }
-  };
-
   const getStatusBadge = (status: FacilityStatusEnum) => {
     const variants = {
       [FacilityStatusEnum.PENDING]: {
@@ -165,14 +155,8 @@ const FacilityList: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Facilities</h1>
-          <p className="text-gray-500 mt-1">Manage and review all healthcare facilities</p>
+          <p className="text-gray-500 mt-1">View and manage all facility listings</p>
         </div>
-        <Link href="/admin/facilities/create">
-          <Button className="gap-2 cursor-pointer">
-            <Plus className="h-4 w-4" />
-            Add Facility
-          </Button>
-        </Link>
       </div>
 
       <Card className="shadow-sm border-gray-200 overflow-hidden">
@@ -181,7 +165,7 @@ const FacilityList: React.FC = () => {
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <CardTitle className="text-xl flex items-center gap-2">
                 <Filter className="h-5 w-5 text-gray-400" />
-                Facility Management
+                Facility Overview
               </CardTitle>
               <div className="flex items-center gap-2 text-sm text-gray-500">
                 <span className="hidden sm:inline">Total:</span>
@@ -251,17 +235,9 @@ const FacilityList: React.FC = () => {
                           <p className="text-gray-500 mt-1 text-sm">
                             {debouncedSearch || statusFilter !== 'all'
                               ? 'Try adjusting your search or filters'
-                              : 'Get started by adding your first facility'}
+                              : 'No facilities have been registered yet'}
                           </p>
                         </div>
-                        {!debouncedSearch && statusFilter === 'all' && (
-                          <Link href="/admin/facilities/create">
-                            <Button variant="outline" className="gap-2">
-                              <Plus className="h-4 w-4" />
-                              Add First Facility
-                            </Button>
-                          </Link>
-                        )}
                       </div>
                     </TableCell>
                   </TableRow>
@@ -357,7 +333,7 @@ const FacilityList: React.FC = () => {
                           <div className="flex justify-end gap-1">
                             {/* Desktop Actions */}
                             <div className="hidden sm:flex gap-1">
-                              <Link href={`/admin/facilities/${facility._id}`}>
+                              <Link href={`/super-admin/facilities/${facility._id}`}>
                                 <Button
                                   variant="ghost"
                                   size="sm"
@@ -367,26 +343,6 @@ const FacilityList: React.FC = () => {
                                   <Eye className="h-4 w-4" />
                                 </Button>
                               </Link>
-                              <Link href={`/admin/facilities/${facility._id}/edit`}>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="h-8 w-8 p-0"
-                                  title="Edit facility"
-                                >
-                                  <Edit className="h-4 w-4" />
-                                </Button>
-                              </Link>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-8 w-8 p-0 text-rose-600 hover:text-rose-700 hover:bg-rose-50"
-                                onClick={() => handleDelete(facility._id.toString())}
-                                disabled={state.loading}
-                                title="Delete facility"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
                             </div>
 
                             {/* Mobile Actions Dropdown */}
@@ -399,23 +355,10 @@ const FacilityList: React.FC = () => {
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
                                   <DropdownMenuItem asChild>
-                                    <Link href={`/admin/facilities/${facility._id}`} className="cursor-pointer">
+                                    <Link href={`/super-admin/facilities/${facility._id}`} className="cursor-pointer">
                                       <Eye className="h-4 w-4 mr-2" />
                                       View Details
                                     </Link>
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem asChild>
-                                    <Link href={`/admin/facilities/${facility._id}/edit`} className="cursor-pointer">
-                                      <Edit className="h-4 w-4 mr-2" />
-                                      Edit Facility
-                                    </Link>
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem
-                                    className="text-rose-600 focus:text-rose-700 focus:bg-rose-50"
-                                    onClick={() => handleDelete(facility._id.toString())}
-                                  >
-                                    <Trash2 className="h-4 w-4 mr-2" />
-                                    Delete
                                   </DropdownMenuItem>
                                 </DropdownMenuContent>
                               </DropdownMenu>

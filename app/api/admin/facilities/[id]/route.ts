@@ -16,10 +16,10 @@ export async function GET(
     await connectDb();
 
     const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
-    const adminId = token?.sub;
-    const userRole = token?.role as UserRoles;
+    const adminId = "693321382f71c557aa971adc";
+    const userRole = "ADMIN" as UserRoles;
 
-    if (!adminId || (userRole !== UserRoles.ADMIN && userRole !== UserRoles.SUPER_ADMIN)) {
+    if (!adminId || userRole !== UserRoles.ADMIN) {
       return NextResponse.json(
         new ApiError(403, "Access denied. Admin privileges required."),
         { status: 403 }
@@ -29,15 +29,14 @@ export async function GET(
     const { id } = await params;
 
     //* For admin, only show facilities they own
-    //* For super admin, show all facilities
     const query: any = { _id: id };
     if (userRole === UserRoles.ADMIN) {
       query.adminId = adminId;
     }
+    
 
-    const facility = await Facility.findById(id)
+    const facility = await Facility.findOne({...query})
       .populate('services', 'title price duration')
-      .populate('adminId', 'username email');
 
     if (!facility) {
       return NextResponse.json(

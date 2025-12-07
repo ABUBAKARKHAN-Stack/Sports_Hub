@@ -23,7 +23,8 @@ export async function isAdmin(request: NextRequest): Promise<boolean> {
   }
 }
 
-// Simple middleware wrapper
+
+
 export function withAdmin(handler: (req: NextRequest) => Promise<NextResponse>) {
   return async (req: NextRequest) => {
     const hasAdminAccess = await isAdmin(req);

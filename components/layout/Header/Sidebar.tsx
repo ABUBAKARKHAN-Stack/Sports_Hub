@@ -93,19 +93,19 @@ const Sidebar: React.FC<SidebarProps> = ({
   // Icon mapping for sidebar items
   const getIcon = useCallback((label: string) => {
     const labelLower = label.toLowerCase();
-    if (labelLower.includes('dashboard')) return <LayoutDashboard className="w-5 h-5 flex-shrink-0" />;
-    if (labelLower.includes('home')) return <Home className="w-5 h-5 flex-shrink-0" />;
-    if (labelLower.includes('facilit')) return <Building className="w-5 h-5 flex-shrink-0" />;
-    if (labelLower.includes('service')) return <ClipboardCheck className="w-5 h-5 flex-shrink-0" />;
-    if (labelLower.includes('booking')) return <Calendar className="w-5 h-5 flex-shrink-0" />;
-    if (labelLower.includes('payment')) return <CreditCard className="w-5 h-5 flex-shrink-0" />;
-    if (labelLower.includes('setting')) return <Settings className="w-5 h-5 flex-shrink-0" />;
-    if (labelLower.includes('admin') || labelLower.includes('user')) return <Users className="w-5 h-5 flex-shrink-0" />;
-    if (labelLower.includes('analytic')) return <BarChart3 className="w-5 h-5 flex-shrink-0" />;
-    if (labelLower.includes('system')) return <Shield className="w-5 h-5 flex-shrink-0" />;
-    if (labelLower.includes('audit') || labelLower.includes('report')) return <FileText className="w-5 h-5 flex-shrink-0" />;
-    if (labelLower.includes('notification')) return <Bell className="w-5 h-5 flex-shrink-0" />;
-    return <LayoutDashboard className="w-5 h-5 flex-shrink-0" />;
+    if (labelLower.includes('dashboard')) return <LayoutDashboard className="w-5 h-5 shrink-0" />;
+    if (labelLower.includes('home')) return <Home className="w-5 h-5 shrink-0" />;
+    if (labelLower.includes('facilit')) return <Building className="w-5 h-5 shrink-0" />;
+    if (labelLower.includes('service')) return <ClipboardCheck className="w-5 h-5 shrink-0" />;
+    if (labelLower.includes('booking')) return <Calendar className="w-5 h-5 shrink-0" />;
+    if (labelLower.includes('payment')) return <CreditCard className="w-5 h-5 shrink-0" />;
+    if (labelLower.includes('setting')) return <Settings className="w-5 h-5 shrink-0" />;
+    if (labelLower.includes('admin') || labelLower.includes('user')) return <Users className="w-5 h-5 shrink-0" />;
+    if (labelLower.includes('analytic')) return <BarChart3 className="w-5 h-5 shrink-0" />;
+    if (labelLower.includes('system')) return <Shield className="w-5 h-5 shrink-0" />;
+    if (labelLower.includes('audit') || labelLower.includes('report')) return <FileText className="w-5 h-5 shrink-0" />;
+    if (labelLower.includes('notification')) return <Bell className="w-5 h-5 shrink-0" />;
+    return <LayoutDashboard className="w-5 h-5 shrink-0" />;
   }, []);
 
   // Group links by category
@@ -124,20 +124,20 @@ const Sidebar: React.FC<SidebarProps> = ({
   // Desktop Sidebar Content
   const SidebarContent = () => (
     <div className={cn(
-      "hidden lg:flex flex-col bg-white border-r border-border h-screen shadow-soft transition-all duration-300 ease-in-out overflow-hidden",
+      "hidden lg:flex flex-col bg-white border-r border-border  shadow-soft transition-all duration-300 ease-in-out h-auto overflow-hidden",
       collapsed ? "w-[70px]" : "w-64",
       className
     )}>
       {/* Logo/Brand Area - Fixed height */}
       <div className={cn(
-        "border-b border-border relative min-h-[80px] flex items-center",
+        "border-b border-border relative min-h-20 flex items-center",
         collapsed ? "px-3 justify-center" : "px-6"
       )}>
         <div className={cn(
           "flex items-center gap-3 w-full",
           collapsed && "justify-center"
         )}>
-          <div className="w-10 h-10 bg-gradient-primary rounded-lg flex items-center justify-center flex-shrink-0">
+          <div className="w-10 h-10 bg-gradient-primary rounded-lg flex items-center justify-center shrink-0">
             <LayoutDashboard className="w-5 h-5 text-white" />
           </div>
           {!collapsed && (
@@ -189,7 +189,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                       {links.length > 1 && (
                         <button
                           onClick={() => toggleCategory(category)}
-                          className="p-1 hover:bg-accent rounded transition-colors focus:outline-none focus:ring-1 focus:ring-primary flex-shrink-0"
+                          className="p-1 hover:bg-accent rounded transition-colors focus:outline-none focus:ring-1 focus:ring-primary shrink-0"
                           aria-label={isExpanded ? `Collapse ${category}` : `Expand ${category}`}
                         >
                           <ChevronRight className={cn(
@@ -222,7 +222,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                           title={collapsed ? link.label : undefined}
                         >
                           <div className={cn(
-                            "transition-colors flex-shrink-0",
+                            "transition-colors shrink-0",
                             isActive ? "text-primary-foreground" : "text-muted-foreground group-hover:text-accent-foreground"
                           )}>
                             {getIcon(link.label)}
@@ -232,7 +232,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                               <span className="flex-1 truncate min-w-0">{link.label}</span>
                               {link.badge && (
                                 <span className={cn(
-                                  "px-2 py-0.5 text-xs rounded-full min-w-[20px] text-center flex-shrink-0",
+                                  "px-2 py-0.5 text-xs rounded-full min-w-[20px] text-center shrink-0",
                                   isActive 
                                     ? "bg-white/20 text-white" 
                                     : "bg-primary/10 text-primary"
@@ -262,7 +262,7 @@ const Sidebar: React.FC<SidebarProps> = ({
           <div className="space-y-4">
             {/* User Profile */}
             <div className="flex items-center gap-3 p-3 bg-accent rounded-lg">
-              <div className="w-10 h-10 bg-gradient-to-br from-primary to-secondary rounded-full flex items-center justify-center flex-shrink-0">
+              <div className="w-10 h-10 bg-gradient-to-br from-primary to-secondary rounded-full flex items-center justify-center shrink-0">
                 <span className="text-white font-medium text-sm">
                   {session?.user?.name?.charAt(0)?.toUpperCase() || "U"}
                 </span>
@@ -280,13 +280,13 @@ const Sidebar: React.FC<SidebarProps> = ({
             {/* Quick Actions */}
             <div className="grid grid-cols-3 gap-2">
               <button className="flex flex-col items-center gap-1 p-2 rounded-lg hover:bg-accent transition-colors focus:outline-none focus:ring-1 focus:ring-primary">
-                <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
+                <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center shrink-0">
                   <User className="w-4 h-4 text-primary" />
                 </div>
                 <span className="text-xs text-muted-foreground truncate w-full text-center">Profile</span>
               </button>
               <button className="flex flex-col items-center gap-1 p-2 rounded-lg hover:bg-accent transition-colors focus:outline-none focus:ring-1 focus:ring-primary">
-                <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
+                <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center shrink-0">
                   <Settings className="w-4 h-4 text-primary" />
                 </div>
                 <span className="text-xs text-muted-foreground truncate w-full text-center">Settings</span>
@@ -295,7 +295,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                 onClick={handleLogout}
                 className="flex flex-col items-center gap-1 p-2 rounded-lg hover:bg-destructive/10 transition-colors focus:outline-none focus:ring-1 focus:ring-destructive"
               >
-                <div className="w-8 h-8 bg-destructive/10 rounded-full flex items-center justify-center flex-shrink-0">
+                <div className="w-8 h-8 bg-destructive/10 rounded-full flex items-center justify-center shrink-0">
                   <LogOut className="w-4 h-4 text-destructive" />
                 </div>
                 <span className="text-xs text-muted-foreground truncate w-full text-center">Logout</span>
@@ -305,19 +305,19 @@ const Sidebar: React.FC<SidebarProps> = ({
         ) : (
           // Collapsed view - Fixed positioning
           <div className="flex flex-col items-center justify-center space-y-4 h-full">
-            <div className="w-10 h-10 bg-gradient-to-br from-primary to-secondary rounded-full flex items-center justify-center text-white font-medium text-sm flex-shrink-0">
+            <div className="w-10 h-10 bg-gradient-to-br from-primary to-secondary rounded-full flex items-center justify-center text-white font-medium text-sm shrink-0">
               {session?.user?.name?.charAt(0)?.toUpperCase() || "U"}
             </div>
             <div className="flex items-center gap-2 w-full justify-center">
-              <button className="p-2 rounded-lg hover:bg-accent transition-colors flex-shrink-0" title="Profile">
+              <button className="p-2 rounded-lg hover:bg-accent transition-colors shrink-0" title="Profile">
                 <User className="w-5 h-5 text-muted-foreground" />
               </button>
-              <button className="p-2 rounded-lg hover:bg-accent transition-colors flex-shrink-0" title="Settings">
+              <button className="p-2 rounded-lg hover:bg-accent transition-colors shrink-0" title="Settings">
                 <Settings className="w-5 h-5 text-muted-foreground" />
               </button>
               <button 
                 onClick={handleLogout}
-                className="p-2 rounded-lg hover:bg-destructive/10 transition-colors flex-shrink-0"
+                className="p-2 rounded-lg hover:bg-destructive/10 transition-colors shrink-0"
                 title="Logout"
               >
                 <LogOut className="w-5 h-5 text-destructive" />
@@ -348,7 +348,7 @@ const Sidebar: React.FC<SidebarProps> = ({
           <div className="p-4 border-b border-border bg-gradient-to-r from-primary/5 to-white min-h-[80px] flex items-center">
             <div className="flex items-center justify-between w-full">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-gradient-primary rounded-lg flex items-center justify-center flex-shrink-0">
+                <div className="w-10 h-10 bg-gradient-primary rounded-lg flex items-center justify-center shrink-0">
                   <LayoutDashboard className="w-6 h-6 text-white" />
                 </div>
                 <div className="min-w-0">
@@ -358,7 +358,7 @@ const Sidebar: React.FC<SidebarProps> = ({
               </div>
               <button
                 onClick={onMobileClose}
-                className="p-2 hover:bg-accent rounded-lg transition-colors focus:outline-none focus:ring-1 focus:ring-primary flex-shrink-0"
+                className="p-2 hover:bg-accent rounded-lg transition-colors focus:outline-none focus:ring-1 focus:ring-primary shrink-0"
                 aria-label="Close menu"
               >
                 <X className="w-5 h-5 text-foreground" />
@@ -385,7 +385,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                           {links.length > 1 && (
                             <button
                               onClick={() => toggleCategory(category)}
-                              className="p-1 hover:bg-accent rounded transition-colors focus:outline-none focus:ring-1 focus:ring-primary flex-shrink-0"
+                              className="p-1 hover:bg-accent rounded transition-colors focus:outline-none focus:ring-1 focus:ring-primary shrink-0"
                             >
                               <ChevronRight className={cn(
                                 "w-3 h-3 text-muted-foreground transition-transform duration-200",
@@ -416,7 +416,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                               )}
                             >
                               <div className={cn(
-                                "flex-shrink-0",
+                                "shrink-0",
                                 isActive ? "text-primary-foreground" : "text-muted-foreground"
                               )}>
                                 {getIcon(link.label)}
@@ -424,7 +424,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                               <span className="flex-1 truncate min-w-0">{link.label}</span>
                               {link.badge && (
                                 <span className={cn(
-                                  "px-2 py-0.5 text-xs rounded-full min-w-[20px] text-center flex-shrink-0",
+                                  "px-2 py-0.5 text-xs rounded-full min-w-[20px] text-center shrink-0",
                                   isActive 
                                     ? "bg-white/20 text-white" 
                                     : "bg-primary/10 text-primary"
@@ -447,7 +447,7 @@ const Sidebar: React.FC<SidebarProps> = ({
           <div className="p-4 border-t border-border bg-accent">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3 min-w-0">
-                <div className="w-10 h-10 bg-gradient-to-br from-primary to-secondary rounded-full flex items-center justify-center flex-shrink-0">
+                <div className="w-10 h-10 bg-gradient-to-br from-primary to-secondary rounded-full flex items-center justify-center shrink-0">
                   <span className="text-white font-medium text-sm">
                     {session?.user?.name?.charAt(0)?.toUpperCase() || "U"}
                   </span>
@@ -463,7 +463,7 @@ const Sidebar: React.FC<SidebarProps> = ({
               </div>
               <button 
                 onClick={handleLogout}
-                className="p-2 hover:bg-destructive/10 rounded-lg transition-colors focus:outline-none focus:ring-1 focus:ring-destructive flex-shrink-0"
+                className="p-2 hover:bg-destructive/10 rounded-lg transition-colors focus:outline-none focus:ring-1 focus:ring-destructive shrink-0"
                 aria-label="Logout"
               >
                 <LogOut className="w-5 h-5 text-destructive" />

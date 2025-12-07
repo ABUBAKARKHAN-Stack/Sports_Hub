@@ -1,10 +1,10 @@
 import React from 'react';
 import AdminPageHeader from '@/components/admin/AdminPageHeader';
-import FacilityList from '@/components/admin/facilities/FacilityList';
+import FacilityList from '@/components/super_admin/facilities/FacilityList';
 import ContainerLayout from '@/components/layout/ContainerLayout';
 import { Building2, Users,  } from 'lucide-react';
 
-const FacilityPage = () => {
+const SuperAdminFacilityPage = () => {
   return (
     <main className='space-y-6'>
     {/* <ContainerLayout className='space-y-6'> */}
@@ -20,4 +20,4 @@ const FacilityPage = () => {
   );
 };
 
-export default FacilityPage;
+export default SuperAdminFacilityPage;

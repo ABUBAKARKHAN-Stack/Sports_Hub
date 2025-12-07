@@ -18,10 +18,8 @@ export default async function SingleFacilityPage({ params }: PageProps) {
   const { id } = await params;
 
   return (
-    <main className='mt-10'>
-      <ContainerLayout>
+    <main>
         <FacilityDetailsView id={id} />
-      </ContainerLayout>
     </main>
   );
 }

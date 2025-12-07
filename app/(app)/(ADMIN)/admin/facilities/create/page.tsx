@@ -13,15 +13,15 @@ const CreateFacility = () => {
     } = useFacility()
     return (
 
-        <main className='mt-10'>
-            <ContainerLayout className='space-y-6'>
-                <AdminPageHeader
+        <main className='space-y-6'>
+            {/* <ContainerLayout className='space-y-6'> */}
+                {/* <AdminPageHeader
                     mainHeading='Create Facility'
                     subText='Fill out the form below to add a new facility.'
                     mainIcon={<Building className='h-6 w-6 sm:h-8 sm:w-8' />}
-                />
+                /> */}
                 <FacilityForm onSubmit={createFacility as any} isLoading={loading}   />
-            </ContainerLayout>
+            {/* </ContainerLayout> */}
         </main>
     )
 }

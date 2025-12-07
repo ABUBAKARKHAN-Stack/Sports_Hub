@@ -165,7 +165,7 @@ const FacilityList: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Facilities</h1>
-          <p className="text-gray-500 mt-1">Manage and review all healthcare facilities</p>
+          <p className="text-gray-500 mt-1">Manage and review your all indoor facilities</p>
         </div>
         <Link href="/admin/facilities/create">
           <Button className="gap-2 cursor-pointer">

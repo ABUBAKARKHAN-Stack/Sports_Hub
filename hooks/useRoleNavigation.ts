@@ -59,32 +59,57 @@ export const useRoleNavigation = (userRole?: UserRoles) => {
     { 
       label: "Dashboard", 
       href: "/admin/dashboard",
-      roles: [UserRoles.ADMIN, UserRoles.SUPER_ADMIN]
+      roles: [UserRoles.ADMIN]
     },
     { 
       label: "Facilities", 
       href: "/admin/facilities",
-      roles: [UserRoles.ADMIN, UserRoles.SUPER_ADMIN]
+      roles: [UserRoles.ADMIN]
     },
     { 
       label: "Services", 
       href: "/admin/services",
-      roles: [UserRoles.ADMIN, UserRoles.SUPER_ADMIN]
+      roles: [UserRoles.ADMIN]
     },
     { 
       label: "Bookings", 
       href: "/admin/bookings",
-      roles: [UserRoles.ADMIN, UserRoles.SUPER_ADMIN]
+      roles: [UserRoles.ADMIN]
     },
     { 
       label: "Payments", 
       href: "/admin/payments",
-      roles: [UserRoles.ADMIN, UserRoles.SUPER_ADMIN]
+      roles: [UserRoles.ADMIN]
     },
   ];
 
   //* Super Admin-only links (for sidebar, in addition to manager links)
   const superAdminLinks: NavLink[] = [
+     { 
+      label: "Dashboard", 
+      href: "/super-admin/dashboard",
+      roles: [UserRoles.ADMIN]
+    },
+    { 
+      label: "Facilities", 
+      href: "/super-admin/facilities",
+      roles: [UserRoles.ADMIN]
+    },
+    { 
+      label: "Services", 
+      href: "/super-admin/services",
+      roles: [UserRoles.ADMIN]
+    },
+    { 
+      label: "Bookings", 
+      href: "/super-admin/bookings",
+      roles: [UserRoles.ADMIN]
+    },
+    { 
+      label: "Payments", 
+      href: "/super-admin/payments",
+      roles: [UserRoles.ADMIN]
+    },
     { 
       label: "System Settings", 
       href: "/super-admin/settings",
@@ -127,7 +152,7 @@ export const useRoleNavigation = (userRole?: UserRoles) => {
     if (userRole === UserRoles.ADMIN) {
       sidebarLinks.push(...managerLinks);
     } else if (userRole === UserRoles.SUPER_ADMIN) {
-      sidebarLinks.push(...managerLinks, ...superAdminLinks);
+      sidebarLinks.push(...superAdminLinks);
     }
 
     return sidebarLinks;

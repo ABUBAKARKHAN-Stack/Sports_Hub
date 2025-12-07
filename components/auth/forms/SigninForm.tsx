@@ -69,9 +69,9 @@ const SigninForm = () => {
         if (session) {
             const role = session.user.role;
             if (role === UserRoles.SUPER_ADMIN) {
-                router.push("/super-admin/")
+                router.push("/super-admin/dashboard")
             } else if (role === UserRoles.ADMIN) {
-                router.push("/admin/")
+                router.push("/admin/dashboard")
             } else {
                 router.push("/")
             }
