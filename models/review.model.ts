@@ -45,13 +45,6 @@ const ReviewSchema = new Schema<ReviewModelType>(
     { timestamps: true }
 );
 
-//* Indexes for better query performance
-ReviewSchema.index({ userId: 1 });
-ReviewSchema.index({ facilityId: 1 });
-ReviewSchema.index({ serviceId: 1 });
-ReviewSchema.index({ status: 1 });
-ReviewSchema.index({ rating: 1 });
-ReviewSchema.index({ facilityId: 1, status: 1 });
 
 //* Ensure either facilityId or serviceId is provided
 ReviewSchema.pre('validate', function (next) {

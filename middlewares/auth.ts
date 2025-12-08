@@ -24,9 +24,8 @@ export async function isAdmin(request: NextRequest): Promise<boolean> {
 }
 
 
-
-export function withAdmin(handler: (req: NextRequest) => Promise<NextResponse>) {
-  return async (req: NextRequest) => {
+export function withAdmin(handler: (req: NextRequest,context?:any) => Promise<NextResponse>) {
+  return async (req: NextRequest,context?:any) => {
     const hasAdminAccess = await isAdmin(req);
     
     if (!hasAdminAccess) {
@@ -36,6 +35,6 @@ export function withAdmin(handler: (req: NextRequest) => Promise<NextResponse>) 
       );
     }
 
-    return handler(req);
+    return handler(req,context);
   };
 }

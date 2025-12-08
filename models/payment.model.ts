@@ -50,13 +50,6 @@ const PaymentSchema = new Schema<PaymentModelType>(
   { timestamps: true }
 );
 
-//* Indexes for better query performance
-PaymentSchema.index({ bookingId: 1 });
-PaymentSchema.index({ userId: 1 });
-PaymentSchema.index({ transactionId: 1 });
-PaymentSchema.index({ status: 1 });
-PaymentSchema.index({ createdAt: 1 });
-PaymentSchema.index({ paymentMethod: 1, status: 1 });
 
 export const Payment = (models?.Payment as Model<PaymentModelType>) || 
   model<PaymentModelType>("Payment", PaymentSchema);

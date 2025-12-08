@@ -2,7 +2,6 @@
 
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { createFacilitySchema } from '@/schemas/facility.schema';
 import {
   Form,
   FormControl,

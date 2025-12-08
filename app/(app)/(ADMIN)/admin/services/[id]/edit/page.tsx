@@ -1,10 +1,8 @@
-
-import AdminPageHeader from "@/components/admin/AdminPageHeader";
-import UpdateFacility from "@/components/admin/facilities/UpdateFacility";
+import UpdateService from "@/components/admin/services/UpdateService";
 import ContainerLayout from "@/components/layout/ContainerLayout";
 
 
-const EditFacilityPage = async ({params}: { params: Promise<{ id: string } >}) => {
+const EditServicePage = async ({params}: { params: Promise<{ id: string } >}) => {
   const {id} = await params
   
   return (
@@ -15,10 +13,10 @@ const EditFacilityPage = async ({params}: { params: Promise<{ id: string } >}) =
                     subText='Fill out the form below to edit the facility.'
                     mainIcon={<Building className='h-6 w-6 sm:h-8 sm:w-8' />}
                 /> */}
-                <UpdateFacility id={id}   />
+                <UpdateService id={id}   />
             {/* </ContainerLayout> */}
         </main>
   )
 }
 
-export default EditFacilityPage
+export default EditServicePage

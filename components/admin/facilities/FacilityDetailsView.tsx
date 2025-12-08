@@ -36,6 +36,9 @@ import {
   ChevronRight,
   ExternalLink,
   Globe,
+  ArrowRight,
+  Pencil,
+  Grid3X3,
 } from 'lucide-react';
 import Link from 'next/link';
 import { format } from 'date-fns';
@@ -118,10 +121,6 @@ const FacilityDetailsView: React.FC<FacilityDetailsViewProps> = ({ id }) => {
 
   const formatTime = (timeString: string) => {
     return format(new Date(`2000-01-01T${timeString}`), 'hh:mm a');
-  };
-
-  const formatDateTime = (date: Date | string) => {
-    return format(new Date(date), 'dd MMM yyyy • hh:mm a');
   };
 
   const handleImageClick = (index: number) => {
@@ -768,29 +767,71 @@ const FacilityDetailsView: React.FC<FacilityDetailsViewProps> = ({ id }) => {
             </CardHeader>
             <CardContent>
               {facility.services && facility.services.length > 0 ? (
-                <div className="space-y-4">
+                <div className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {facility.services.slice(0, 6).map((serviceId, index) => (
-                      <Card key={index} className="border hover:border-blue-200 transition-colors">
-                        <CardHeader className="pb-2">
-                          <CardTitle className="text-sm font-medium flex items-center gap-2">
-                            <Star className="h-4 w-4 text-amber-500" />
-                            Service {index + 1}
-                          </CardTitle>
+                    {facility.services.slice(0, 6).map((service: any, index) => (
+                      <Card
+                        key={service._id}
+                        className="border border-gray-200 hover:border-green-300 transition-all duration-200 hover:shadow-md group"
+                      >
+                        <CardHeader className="pb-3">
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <CardTitle className="text-sm font-semibold flex items-center gap-2 text-gray-800 group-hover:text-green-700 transition-colors">
+                                <div className="h-2 w-2 rounded-full bg-green-500 shrink-0"></div>
+                                <span className="truncate">{service.title || `Service ${index + 1}`}</span>
+                              </CardTitle>
+                              {service.price && service.duration && (
+                                <div className="flex items-center gap-3 mt-2">
+                                  <span className="inline-flex items-center gap-1 px-2 py-1 bg-green-50 text-green-700 text-xs font-medium rounded-full">
+                                    <span className="font-bold">PKR {service.price}</span>
+                                  </span>
+                                  <span className="text-xs text-gray-500">•</span>
+                                  <span className="text-xs text-gray-600">{service.duration} min</span>
+                                </div>
+                              )}
+                            </div>
+                            <Badge variant="outline" className="text-xs font-normal">
+                              #{index + 1}
+                            </Badge>
+                          </div>
                         </CardHeader>
                         <CardContent>
-                          <div className="space-y-3">
-                            <div className="text-xs font-mono text-gray-500 bg-gray-50 px-2 py-1 rounded">
-                              ID: {serviceId.toString().slice(-8)}
-                            </div>
-                            <div className="flex gap-2">
-                              <Link href={`/admin/services/${serviceId}`} className="flex-1">
-                                <Button variant="outline" size="sm" className="w-full">
+                          <div className="space-y-4">
+                            {service._id && (
+                              <div className="flex items-center justify-between">
+                                <span className="text-xs text-gray-500">Service ID:</span>
+                                <code className="text-xs font-mono text-gray-700 bg-gray-100 px-2 py-1 rounded">
+                                  {service._id.toString().slice(-8)}
+                                </code>
+                              </div>
+                            )}
+                            <div className="flex gap-2 pt-2">
+                              <Link
+                                href={`/admin/services/${service._id}`}
+                                className="flex-1"
+                                aria-label={`View details for ${service.title || `service ${index + 1}`}`}
+                              >
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="w-full hover:bg-gray-50 hover:border-gray-300 transition-colors text-gray-700"
+                                >
+                                  <Eye className="h-3.5 w-3.5 mr-1.5" />
                                   Details
                                 </Button>
                               </Link>
-                              <Link href={`/admin/services/${serviceId}/edit`} className="flex-1">
-                                <Button variant="outline" size="sm" className="w-full">
+                              <Link
+                                href={`/admin/services/${service._id}/edit`}
+                                className="flex-1"
+                                aria-label={`Edit ${service.title || `service ${index + 1}`}`}
+                              >
+                                <Button
+                                  variant="default"
+                                  size="sm"
+                                  className="w-full bg-green-600 hover:bg-green-700 text-white transition-colors"
+                                >
+                                  <Pencil className="h-3.5 w-3.5 mr-1.5" />
                                   Edit
                                 </Button>
                               </Link>
@@ -800,14 +841,21 @@ const FacilityDetailsView: React.FC<FacilityDetailsViewProps> = ({ id }) => {
                       </Card>
                     ))}
                   </div>
+
                   {facility.services.length > 6 && (
-                    <div className="text-center pt-4 border-t">
-                      <p className="text-sm text-gray-500">
-                        Showing 6 of {facility.services.length} services
-                      </p>
+                    <div className="text-center flex flex-col justify-center items-center pt-6 border-t">
+                      <div className="inline-flex items-center gap-2 text-sm text-gray-600 mb-3">
+                        <div className="h-px w-8 bg-gray-300"></div>
+                        Showing {Math.min(6, facility.services.length)} of {facility.services.length} services
+                        <div className="h-px w-8 bg-gray-300"></div>
+                      </div>
                       <Link href={`/admin/services?facility=${id}`}>
-                        <Button variant="link" className="mt-2">
-                          View all services
+                        <Button
+                          variant="outline"
+                          className="border-green-200 text-green-700 hover:bg-green-50 hover:text-green-800 hover:border-green-300 font-medium px-6"
+                        >
+                          <Grid3X3 className="h-4 w-4 mr-2" />
+                          View All Services
                         </Button>
                       </Link>
                     </div>
@@ -821,7 +869,7 @@ const FacilityDetailsView: React.FC<FacilityDetailsViewProps> = ({ id }) => {
                     This facility hasn't added any services. Add services to start accepting bookings.
                   </p>
                   <Link href={`/admin/services/new?facility=${id}`}>
-                    <Button className="gap-2">
+                    <Button className="gap-2 bg-green-600 hover:bg-green-700">
                       <Settings className="h-4 w-4" />
                       Add First Service
                     </Button>

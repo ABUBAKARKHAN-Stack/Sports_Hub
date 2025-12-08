@@ -64,10 +64,6 @@ const FacilitySchema = new Schema<FacilityModelType>(
   { timestamps: true }
 );
 
-//* Indexes for better query performance
-FacilitySchema.index({ adminId: 1 });
-FacilitySchema.index({ status: 1 });
-FacilitySchema.index({ "location.city": 1 });
 
 export const Facility = (models?.Facility as Model<FacilityModelType>) ||
   model<FacilityModelType>("Facility", FacilitySchema);

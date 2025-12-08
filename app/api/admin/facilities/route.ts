@@ -48,7 +48,6 @@ async function getFacilities(req: NextRequest) {
 
         const [facilities, total] = await Promise.all([
             Facility.find(query)
-                .populate('services', 'title price')
                 .sort({ createdAt: -1 })
                 .skip(skip)
                 .limit(limit),

@@ -69,14 +69,6 @@ const BookingSchema = new Schema<BookingModelType>(
   { timestamps: true }
 );
 
-//* Indexes for better query performance
-BookingSchema.index({ userId: 1 });
-BookingSchema.index({ facilityId: 1 });
-BookingSchema.index({ serviceId: 1 });
-BookingSchema.index({ slotId: 1 },{unique:true,sparse:true});
-BookingSchema.index({ status: 1, paymentStatus: 1 });
-BookingSchema.index({ bookingDate: 1 });
-BookingSchema.index({ createdAt: 1 });
 
 export const Booking = (models?.Booking as Model<BookingModelType>) || 
   model<BookingModelType>("Booking", BookingSchema);

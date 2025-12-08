@@ -44,16 +44,12 @@ const ServiceSchema = new Schema<ServiceModelType>(
     },
     images: [{ 
       type: String, 
-      default: [] 
+      default: []
     }]
   },
   { timestamps: true }
 );
 
-//* Indexes for better query performance
-ServiceSchema.index({ facilityId: 1 });
-ServiceSchema.index({ isActive: 1 });
-ServiceSchema.index({ category: 1 });
 
 export const Service = (models?.Service as Model<ServiceModelType>) || 
   model<ServiceModelType>("Service", ServiceSchema);

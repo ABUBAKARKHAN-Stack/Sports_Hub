@@ -83,18 +83,21 @@ export interface IFacility {
 
 //* Service Types
 export interface IService {
-    _id: Types.ObjectId;
-    title: string;
-    description?: string;
-    facilityId: Types.ObjectId;
-    price: number;
-    duration: number;
-    capacity: number;
-    category?: string;
-    isActive: boolean;
-    images: string[];
-    createdAt: Date;
-    updatedAt: Date;
+  _id: string;
+  title: string;
+  description?: string;
+  facilityId: {
+    _id: string;
+    name: string;
+  };
+  price: number;
+  duration: number;
+  capacity: number;
+  category: string;
+  images: string[];
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export enum BookingStatusEnum {

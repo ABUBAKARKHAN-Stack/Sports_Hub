@@ -46,11 +46,6 @@ const TimeSlotSchema = new Schema<TimeSlotModelType>(
   { timestamps: true }
 );
 
-//* Compound indexes for better query performance
-TimeSlotSchema.index({ facilityId: 1, serviceId: 1, date: 1 });
-TimeSlotSchema.index({ date: 1, startTime: 1 });
-TimeSlotSchema.index({ isBooked: 1, isActive: 1 });
-TimeSlotSchema.index({ serviceId: 1, date: 1, isActive: 1 });
 
 export const TimeSlot = (models?.TimeSlot as Model<TimeSlotModelType>) || 
   model<TimeSlotModelType>("TimeSlot", TimeSlotSchema);
