@@ -1,5 +1,5 @@
 import { Schema, models, Model, model } from "mongoose";
-import { ITimeSlot } from "@/types/main.types";
+import { ITimeSlot } from "@/types/timeslot.types";
 
 type TimeSlotModelType = ITimeSlot & Document;
 
@@ -31,9 +31,6 @@ const TimeSlotSchema = new Schema<TimeSlotModelType>(
       type: Boolean, 
       default: false 
     },
-    maxCapacity: { 
-      type: Number 
-    },
     bookedCount: { 
       type: Number, 
       default: 0 
@@ -41,11 +38,16 @@ const TimeSlotSchema = new Schema<TimeSlotModelType>(
     isActive: { 
       type: Boolean, 
       default: true 
+    },
+    createdBy: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true
     }
   },
   { timestamps: true }
 );
 
 
-export const TimeSlot = (models?.TimeSlot as Model<TimeSlotModelType>) || 
-  model<TimeSlotModelType>("TimeSlot", TimeSlotSchema);
+export const TimeSlot: Model<TimeSlotModelType> = 
+  models?.TimeSlot || model<TimeSlotModelType>("TimeSlot", TimeSlotSchema);

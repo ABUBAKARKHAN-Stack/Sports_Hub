@@ -71,6 +71,11 @@ export const useRoleNavigation = (userRole?: UserRoles) => {
       href: "/admin/services",
       roles: [UserRoles.ADMIN]
     },
+    {
+      label: "Timeslots",
+      href: "/admin/timeslots",
+      roles: [UserRoles.ADMIN]
+    },
     { 
       label: "Bookings", 
       href: "/admin/bookings",

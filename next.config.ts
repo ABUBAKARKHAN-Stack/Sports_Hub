@@ -1,5 +1,5 @@
 import type { NextConfig } from "next";
-import { URL } from "url";
+// import { URL } from "url";
 
 const nextConfig: NextConfig = {
   /* config options here */

@@ -99,7 +99,7 @@ async function createService(req: NextRequest) {
     }
 
     const body = await req.formData();
-    
+
 
     //* Validate required fields
     const requiredFields = ['title', 'facilityId', 'price', 'duration', 'capacity', "category"];
@@ -179,7 +179,11 @@ async function createService(req: NextRequest) {
       isActive: body.get('isActive') ? body.get('isActive') === 'true' : true
     };
 
-    const newService = new Service(serviceData);
+    const newService = new Service({
+      ...serviceData,
+      category: serviceData.category.toLowerCase().replace(/\s+/g, "")
+    });
+
     await newService.save();
 
     //* Add service to facility's services array

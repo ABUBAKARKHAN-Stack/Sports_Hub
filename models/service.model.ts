@@ -36,7 +36,8 @@ const ServiceSchema = new Schema<ServiceModelType>(
     },
     category: { 
       type: String, 
-      default: "" 
+      default: "" ,
+      trim:true,
     },
     isActive: { 
       type: Boolean, 

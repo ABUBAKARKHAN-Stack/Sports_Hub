@@ -370,16 +370,6 @@ const ServiceDetailsView: React.FC<ServiceDetailsViewProps> = ({ id }) => {
                             <CardContent>
                                 <div className="grid grid-cols-2 gap-3">
                                     <div className="text-center p-3 bg-gray-50 rounded-lg">
-                                        <Calendar className="h-5 w-5 text-gray-600 mx-auto mb-2" />
-                                        <p className="text-xs font-medium text-gray-600">Bookings</p>
-                                        <p className="text-lg font-bold mt-1">0</p>
-                                    </div>
-                                    <div className="text-center p-3 bg-gray-50 rounded-lg">
-                                        <DollarSign className="h-5 w-5 text-gray-600 mx-auto mb-2" />
-                                        <p className="text-xs font-medium text-gray-600">Revenue</p>
-                                        <p className="text-lg font-bold mt-1">{formatCurrency(0)}</p>
-                                    </div>
-                                    <div className="text-center p-3 bg-gray-50 rounded-lg">
                                         <Users className="h-5 w-5 text-gray-600 mx-auto mb-2" />
                                         <p className="text-xs font-medium text-gray-600">Capacity</p>
                                         <p className="text-lg font-bold mt-1">{service.capacity}</p>
