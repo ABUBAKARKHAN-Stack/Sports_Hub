@@ -10,7 +10,7 @@ import {
   UpdateServiceFormData
 } from "@/types/service.types";
 import { IService } from "@/types/main.types";
-import axiosInstance from "@/lib/axios";
+import {axiosInstance} from "@/lib/axios";
 import { ApiResponse } from "@/utils/ApiResponse";
 import { useToasts } from "@/hooks/toastNotifications";
 

@@ -9,8 +9,8 @@ import { useRoleNavigation } from "@/hooks/useRoleNavigation";
 import { Home, Settings, Calendar, User as UserIcon, Shield, Building2 } from "lucide-react";
 
 const MobileActions: FC = () => {
-  const { session } = useAuth();
-  const { getDashboardLink } = useRoleNavigation(session?.user?.role);
+  const { user } = useAuth();
+  const { getDashboardLink } = useRoleNavigation(user?.role);
 
   const getRoleIcon = (role: UserRoles) => {
     switch (role) {
@@ -44,9 +44,9 @@ const MobileActions: FC = () => {
         className="flex flex-col h-auto py-3"
       >
         <Link href={getDashboardLink()}>
-          {session?.user?.role ? (
+          {user?.role ? (
             <>
-              {getRoleIcon(session.user.role)}
+              {getRoleIcon(user.role)}
               <span className="text-xs mt-1">Dashboard</span>
             </>
           ) : (
@@ -58,7 +58,7 @@ const MobileActions: FC = () => {
         </Link>
       </Button>
 
-      {session?.user?.role === UserRoles.USER && (
+      {user?.role === UserRoles.USER && (
         <Button
           variant="outline"
           size="sm"
@@ -72,7 +72,7 @@ const MobileActions: FC = () => {
         </Button>
       )}
 
-      {(session?.user?.role === UserRoles.ADMIN || session?.user?.role === UserRoles.SUPER_ADMIN) && (
+      {(user?.role === UserRoles.ADMIN || user?.role === UserRoles.SUPER_ADMIN) && (
         <Button
           variant="outline"
           size="sm"

@@ -1,6 +1,6 @@
 "use client"
 
-import { createContext, Dispatch, ReactNode, SetStateAction, useContext, useEffect } from "react";
+import { createContext, Dispatch, ReactNode, SetStateAction, useContext, useEffect, useState } from "react";
 import {
     SignInOptions,
     SignOutParams,
@@ -11,12 +11,15 @@ import {
 } from 'next-auth/react'
 import { Session } from "next-auth";
 import { useToasts } from "@/hooks/toastNotifications";
-import { UserRoles } from "@/types/main.types";
+import { IUser, UserRoles } from "@/types/main.types";
 import { useRouter } from "next/navigation";
-import axiosInstance from "@/lib/axios";
+import { axiosInstance } from "@/lib/axios";
 import { UseFormReturn } from "react-hook-form";
 import z from "zod";
 import { accountVerificationSchema, forgotPasswordSchema, resetPasswordSchema } from "@/schemas/auth.schema";
+import { useAuthQuery } from "@/hooks/queries/useAuthQuery";
+import { queryClient } from "@/lib/queryClient";
+import { QueryTags } from "@/types/query_tags";
 
 type ResetPasswordType = {
     token: string,
@@ -31,7 +34,7 @@ type VerifyAccountType = {
 }
 
 type AuthContextType = {
-    session: Session | null;
+    user: IUser | null | undefined;
     signIn: (provider?: string, options?: SignInOptions, authorizationParams?: Record<string, string>) => Promise<void>;
     signOut: (options?: SignOutParams) => Promise<void>;
     status: "authenticated" | "loading" | "unauthenticated",
@@ -53,6 +56,11 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
         successToast,
         errorToast,
     } = useToasts()
+    const {
+        getUserDetails
+    } = useAuthQuery()
+
+    const { data: user } = getUserDetails(session)
 
     const router = useRouter()
 
@@ -68,14 +76,6 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
 
                 if (resp?.ok && !resp.error) {
                     successToast("Signed in successfully!");
-                    if (session?.user.role === UserRoles.SUPER_ADMIN) {
-                        router.push('/super_admin/dashboard')
-                    } else if (session?.user.role === UserRoles.ADMIN) {
-                        router.push('/admin/dashboard')
-                    } else {
-                        router.push('/')
-                    }
-
                     return;
                 }
 
@@ -101,7 +101,12 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const signOut = async (options?: SignOutParams) => {
         try {
-            await NextAuthSignOut({ ...options, callbackUrl: "/signin" });
+            queryClient.removeQueries({
+                queryKey: [QueryTags.ME]
+            })
+            localStorage.removeItem('cache')  //* Clear react-query cache on sign out
+
+            await NextAuthSignOut({ ...options, callbackUrl: "/signin",redirect:true });
             console.log("[AuthContext] signOut(): User signed out.");
             successToast("Signed out successfully.");
 
@@ -189,7 +194,7 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     return (
         <AuthContext.Provider value={{
-            session,
+            user,
             signIn,
             signOut,
             forgotPassword,

@@ -5,6 +5,9 @@ const axiosInstance = axios.create({
     baseURL: "/api",
 });
 
+
+
+
 axiosInstance.interceptors.response.use(
     (res) => res,
     (err) => {
@@ -18,6 +21,7 @@ axiosInstance.interceptors.response.use(
 
 
 
-
-
-export default axiosInstance;
+export {
+    axiosInstance,
+    // axiosInstanceWithCredentials
+}

@@ -3,11 +3,11 @@ import { IUser, UserRoles } from "./types/main.types";
 
 declare module "next-auth" {
     interface Session {
-        user: Omit<IUser, "password"> & { id: string } & DefaultSession["user"];
+        user: { userId: string } 
     }
 
-    interface User extends Omit<IUser, "password"> {
-        id: string;
+    interface User {
+        userId: string;
         role: UserRoles;
     }
 }

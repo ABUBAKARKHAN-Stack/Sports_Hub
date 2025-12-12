@@ -8,7 +8,10 @@ import VenueMember from "@/components/Home_components/VenueMember";
 import FAQ from "@/components/Home_components/FAQ";
 import Newsletter from "@/components/Home_components/Newsletter";
 
-export default function Home() {
+
+
+export default async function Home() {
+
   return (
     <>
       <Hero />

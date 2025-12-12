@@ -7,9 +7,9 @@ import { useAuth } from '@/context/AuthContext'
 import { UserRoles } from '@/types/main.types'
 
 const HeaderTopBar = () => {
-    const { session } = useAuth()
+    const { user } = useAuth()
 
-    const isAdminOrSuperAdmin = session?.user.role === UserRoles.ADMIN || session?.user.role === UserRoles.SUPER_ADMIN
+    const isAdminOrSuperAdmin = user?.role === UserRoles.ADMIN || user?.role === UserRoles.SUPER_ADMIN
     if (isAdminOrSuperAdmin) return null
 
     return (
@@ -36,7 +36,7 @@ const HeaderTopBar = () => {
                     </div>
 
                     {/* Login/Register */}
-                    {!session && (
+                    {!user && (
                         <div className="flex items-center gap-6">
                             <button className="flex items-center font-medium gap-2">
                                 <User className="h-3.5 w-3.5" />

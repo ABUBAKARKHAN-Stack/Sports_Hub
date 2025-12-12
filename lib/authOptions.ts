@@ -5,6 +5,7 @@ import bcrypt from "bcryptjs";
 import { userModel } from "@/models/user.model";
 import { connectDb } from "./dbConnect";
 import { AuthProviderEnum, UserRoles } from "@/types/main.types";
+import { UserRole } from "@/types/timeslot.types";
 
 export const authOptions: NextAuthOptions = {
     providers: [
@@ -34,14 +35,9 @@ export const authOptions: NextAuthOptions = {
 
                 //* Return user object for JWT callback
                 return {
+                    userId: user._id.toString(),
                     id: user._id.toString(),
-                    username: user.username,
-                    email: user.email,
-                    phone: user.phone,
-                    avatar: user.avatar,
-                    isVerified: user.isVerified,
-                    role: user.role,
-                    provider: user.provider || AuthProviderEnum.CREDENTIALS
+                    role: user.role as UserRole,
                 };
             },
         }),
@@ -58,8 +54,7 @@ export const authOptions: NextAuthOptions = {
             try {
                 if (user) {
                     if (account?.provider === "google") {
-                        await connectDb();
-
+                        await connectDb();  
                         let dbUser = await userModel.findOne({ email: user.email });
 
                         if (!dbUser) {
@@ -75,29 +70,16 @@ export const authOptions: NextAuthOptions = {
                                 password: randomPassword,
                                 provider: AuthProviderEnum.GOOGLE,
                             });
-                        } else if (dbUser.provider && dbUser.provider !== AuthProviderEnum.GOOGLE) {
-                            //* Prevent login if email exists with another provider
-                            throw new Error(
-                                `Account registered with ${dbUser.provider}. Please login using that provider.`
-                            );
-                        }
+                        } 
 
                         //* Map DB fields to token
                         token.userId = dbUser._id.toString();
                         token.role = dbUser.role;
-                        token.username = dbUser.username;
-                        token.avatar = dbUser.avatar || "";
-                        token.isVerified = dbUser.isVerified;
-                        token.provider = dbUser.provider;
 
                     } else {
                         //* Credentials login
                         token.userId = user.id;
-                        token.role = user.role || UserRoles.USER;
-                        token.username = user.username || "User";
-                        token.avatar = user.avatar || "";
-                        token.isVerified = user.isVerified;
-                        token.provider = user.provider || AuthProviderEnum.CREDENTIALS;
+                        token.role = user.role;
                     }
                 }
 
@@ -110,37 +92,29 @@ export const authOptions: NextAuthOptions = {
 
         //* Session callback
         async session({ session, token, }) {
-            await connectDb()
-            const user = await userModel.findById(token.userId)
-            
+
             if (session.user) {
-                session.user.id = user?._id.toString() as string;
-                session.user.username = user?.username as string;
-                session.user.email = user?.email || "";
-                session.user.avatar = user?.avatar as string;
-                session.user.role = user?.role as UserRoles;
-                session.user.isVerified = user?.isVerified as boolean;
-                session.user.provider = user?.provider as AuthProviderEnum;
+                session.user.userId = token.userId            
             }
             return session;
         },
 
-        //* SignIn callback
-        async signIn({ user, account }) {
-            if (!account) return true;
+        // //* SignIn callback
+        // async signIn({ user, account }) {
+        //     if (!account) return true;
 
-            await connectDb();
+        //     await connectDb();
 
-            if (account.provider === "google") {
-                const dbUser = await userModel.findOne({ email: user.email });
-                if (dbUser && dbUser.provider !== AuthProviderEnum.GOOGLE) {
-                    console.log("Provider conflict:", dbUser.provider);
-                    return false; //* Block login, redirect to error page
-                }
-            }
+        //     if (account.provider === "google") {
+        //         const dbUser = await userModel.findOne({ email: user.email });
+        //         if (dbUser && dbUser.provider !== AuthProviderEnum.GOOGLE) {
+        //             console.log("Provider conflict:", dbUser.provider);
+        //             return false; //* Block login, redirect to error page
+        //         }
+        //     }
 
-            return true;
-        },
+        //     return true;
+        // },
 
 
     },

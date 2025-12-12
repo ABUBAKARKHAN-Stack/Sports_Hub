@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useReducer, ReactNode, useEffect } from "react";
 import { FacilityState, FacilityAction, FacilityContextType, GetFacilitiesParams, FacilitiesResponse } from "@/types/facility.types";
 import { IFacility } from "@/types/main.types";
-import axiosInstance from "@/lib/axios";
+import {axiosInstance} from "@/lib/axios";
 import { ApiResponse } from "@/utils/ApiResponse";
 
 type UserFacilityContextType = Omit<FacilityContextType, "createFacility" | "updateFacility" | "deleteFacility" | "updateFacilityStatus">;

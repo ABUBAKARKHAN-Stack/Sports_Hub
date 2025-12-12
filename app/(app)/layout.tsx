@@ -7,12 +7,14 @@ import { ReactNode } from 'react'
 
 const AppLayout = async ({ children }: { children: ReactNode }) => {
     const session = await getServerSession(authOptions)
+   
+    
 
     return (
         <>
             <Header />
             {children}
-            {session && !session.user.isVerified && <AccountVerificationModal />}
+            {/* {session && !session.user.isVerified && <AccountVerificationModal />} */}
             <Footer />
         </>
     )

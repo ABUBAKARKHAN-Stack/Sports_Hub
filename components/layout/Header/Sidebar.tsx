@@ -47,13 +47,13 @@ const Sidebar: React.FC<SidebarProps> = ({
   onMobileClose 
 }) => {
   const pathname = usePathname();
-  const { session, signOut } = useAuth();
-  const { sidebarNavLinks, hasSidebarNavigation } = useRoleNavigation(session?.user?.role);
+  const { user, signOut } = useAuth();
+  const { sidebarNavLinks, hasSidebarNavigation } = useRoleNavigation(user?.role);
   const [mounted, setMounted] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
 
-  // Fix hydration error
+  //* Fix hydration error
   useEffect(() => {
     setMounted(true);
   }, []);
@@ -264,15 +264,15 @@ const Sidebar: React.FC<SidebarProps> = ({
             <div className="flex items-center gap-3 p-3 bg-accent rounded-lg">
               <div className="w-10 h-10 bg-gradient-to-br from-primary to-secondary rounded-full flex items-center justify-center shrink-0">
                 <span className="text-white font-medium text-sm">
-                  {session?.user?.name?.charAt(0)?.toUpperCase() || "U"}
+                  {user?.username?.charAt(0)?.toUpperCase() || "U"}
                 </span>
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-foreground truncate">
-                  {session?.user?.name || "User"}
+                  {user?.username || "User"}
                 </p>
                 <p className="text-xs text-muted-foreground truncate">
-                  {session?.user?.email?.split('@')[0] || "user"}
+                  {user?.email?.split('@')[0] || "user"}
                 </p>
               </div>
             </div>
@@ -306,7 +306,7 @@ const Sidebar: React.FC<SidebarProps> = ({
           // Collapsed view - Fixed positioning
           <div className="flex flex-col items-center justify-center space-y-4 h-full">
             <div className="w-10 h-10 bg-gradient-to-br from-primary to-secondary rounded-full flex items-center justify-center text-white font-medium text-sm shrink-0">
-              {session?.user?.name?.charAt(0)?.toUpperCase() || "U"}
+              {user?.username?.charAt(0)?.toUpperCase() || "U"}
             </div>
             <div className="flex items-center gap-2 w-full justify-center">
               <button className="p-2 rounded-lg hover:bg-accent transition-colors shrink-0" title="Profile">
@@ -449,15 +449,15 @@ const Sidebar: React.FC<SidebarProps> = ({
               <div className="flex items-center gap-3 min-w-0">
                 <div className="w-10 h-10 bg-gradient-to-br from-primary to-secondary rounded-full flex items-center justify-center shrink-0">
                   <span className="text-white font-medium text-sm">
-                    {session?.user?.name?.charAt(0)?.toUpperCase() || "U"}
+                    {user?.username?.charAt(0)?.toUpperCase() || "U"}
                   </span>
                 </div>
                 <div className="min-w-0">
                   <p className="text-sm font-medium text-foreground truncate">
-                    {session?.user?.name || "User"}
+                    {user?.username || "User"}
                   </p>
                   <p className="text-xs text-muted-foreground truncate">
-                    {session?.user?.email || "user@example.com"}
+                    {user?.email || "user@example.com"}
                   </p>
                 </div>
               </div>

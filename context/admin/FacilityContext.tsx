@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useReducer, ReactNode, useEffect } from "react";
 import { FacilityState, FacilityAction, FacilityContextType, CreateFacilityFormData, UpdateFacilityFormData, GetFacilitiesParams, FacilitiesResponse } from "@/types/facility.types";
 import { IFacility, FacilityStatusEnum } from "@/types/main.types";
-import axiosInstance from "@/lib/axios";
+import {axiosInstance} from "@/lib/axios";
 import { ApiResponse } from "@/utils/ApiResponse";
 import { useToasts } from "@/hooks/toastNotifications";
 

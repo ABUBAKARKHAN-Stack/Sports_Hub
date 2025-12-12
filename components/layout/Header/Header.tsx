@@ -15,8 +15,8 @@ import { useRoleNavigation } from "@/hooks/useRoleNavigation";
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const { session } = useAuth();
-  const { headerNavLinks } = useRoleNavigation(session?.user?.role);
+  const { user } = useAuth();
+  const { headerNavLinks } = useRoleNavigation(user?.role);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);

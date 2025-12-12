@@ -8,6 +8,7 @@ import { NextRequest, NextResponse } from "next/server";
 export const GET = async (request: NextRequest) => {
     try {
         const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET })
+
         const userId = token?.sub
         if (!userId) {
             return NextResponse.json(
@@ -21,6 +22,7 @@ export const GET = async (request: NextRequest) => {
             .findById(userId)
             .select('-password')
             .lean()
+
 
         if (!user) {
             return NextResponse.json(

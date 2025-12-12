@@ -13,7 +13,7 @@ import {
     UserRole
 } from "@/types/timeslot.types";
 import { ITimeSlot } from "@/types/timeslot.types";
-import axiosInstance from "@/lib/axios";
+import {axiosInstance} from "@/lib/axios";
 import { ApiResponse } from "@/utils/ApiResponse";
 import { useToasts } from "@/hooks/toastNotifications";
 import { useAuth } from "@/context/AuthContext";
