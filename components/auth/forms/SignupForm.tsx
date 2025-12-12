@@ -73,7 +73,7 @@ const SignupForm = () => {
 
         try {
             const response = await axiosInstance.post("/auth/register", payload)
- 
+
             if (response.status === 201) {
                 successToast(response.data.message)
                 form.reset()
@@ -202,5 +202,3 @@ const SignupForm = () => {
 }
 
 export default SignupForm
-
-

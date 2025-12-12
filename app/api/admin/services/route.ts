@@ -197,8 +197,6 @@ async function createService(req: NextRequest) {
     );
 
   } catch (error: any) {
-    console.error("Create service error:", error);
-
     if (error.name === 'ValidationError') {
       return NextResponse.json(
         new ApiError(400, "Validation error", error.errors),

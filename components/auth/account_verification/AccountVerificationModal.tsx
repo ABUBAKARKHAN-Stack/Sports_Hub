@@ -4,7 +4,7 @@ import { CheckCircle, Mail } from "lucide-react";
 import { useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import z, { iso } from "zod";
+import z from "zod";
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -114,7 +114,7 @@ export default function AccountVerificationModal() {
                                 <Button
                                     type="button"
                                     variant="ghost"
-                                    className="text-sm hover:!bg-secondary/10 cursor-pointer"
+                                    className="text-sm h-10 hover:!bg-secondary/10 cursor-pointer"
                                     onClick={handleResend}
                                     disabled={resending}
                                 >
