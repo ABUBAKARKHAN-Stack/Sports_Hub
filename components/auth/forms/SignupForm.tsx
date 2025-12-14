@@ -27,7 +27,7 @@ import {
 import { Label } from "@/components/ui/label"
 import { cn } from "@/lib/utils"
 import { IUser, UserRoles } from "@/types/main.types"
-import axiosInstance from "@/lib/axios"
+import {axiosInstance} from "@/lib/axios"
 import { useToasts } from '@/hooks/toastNotifications'
 import { Spinner } from "@/components/ui/spinner"
 import { useRouter } from "next/navigation"

@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document, models, model } from "mongoose";
+import mongoose, { Schema, Document, models, model, Model } from "mongoose";
 
 export interface IVerificationCode extends Document {
     userId: mongoose.Types.ObjectId;
@@ -16,6 +16,4 @@ const verificationCodeSchema = new Schema<IVerificationCode>({
     createdAt: { type: Date, default: Date.now },
 });
 
-export const VerificationCodeModel =
-    models.VerificationCode ||
-    model<IVerificationCode>("VerificationCode", verificationCodeSchema);
+export const VerificationCodeModel = (models.VerificationCode as Model<IVerificationCode>) || model<IVerificationCode>("VerificationCode", verificationCodeSchema);

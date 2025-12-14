@@ -8,8 +8,8 @@ import { NextRequest, NextResponse } from "next/server";
 export const GET = async (request: NextRequest) => {
     try {
         const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET })
-
-        const userId = token?.sub
+        
+        const userId = token?.userId
         if (!userId) {
             return NextResponse.json(
                 new ApiError(401, "Unauthorized"),

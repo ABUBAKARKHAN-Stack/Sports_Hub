@@ -99,24 +99,7 @@ export const authOptions: NextAuthOptions = {
             return session;
         },
 
-        // //* SignIn callback
-        // async signIn({ user, account }) {
-        //     if (!account) return true;
-
-        //     await connectDb();
-
-        //     if (account.provider === "google") {
-        //         const dbUser = await userModel.findOne({ email: user.email });
-        //         if (dbUser && dbUser.provider !== AuthProviderEnum.GOOGLE) {
-        //             console.log("Provider conflict:", dbUser.provider);
-        //             return false; //* Block login, redirect to error page
-        //         }
-        //     }
-
-        //     return true;
-        // },
-
-
+     
     },
 
     pages: {

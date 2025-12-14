@@ -1,4 +1,3 @@
-// components/layout/UserMenu.tsx
 "use client";
 
 import {
@@ -9,58 +8,52 @@ import {
   DropdownMenuSeparator,
   DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
-import { Building2, Settings, User, Shield, LayoutDashboard } from "lucide-react";
+import { User, LayoutDashboard, AlertCircle } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { UserRoles } from "@/types/main.types";
 import { useRoleNavigation } from "@/hooks/useRoleNavigation";
+import { Skeleton } from "@/components/ui/skeleton";
+import { capitalizeFirstLetter } from "@/lib/capitalizeFirstLetter";
 
 export default function UserMenu() {
-  const { user, signOut } = useAuth();
-  const { getDashboardLink } = useRoleNavigation(user?.role);
+  const { user, signOut, isLoading, isError } = useAuth();
+  const { getDashboardLink, getProfileLink, getRoleIcon } = useRoleNavigation(user?.role);
 
-  const capitalizeFirst = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);
 
-  if (!user) {
-    return (
-      <button className="rounded-full w-10 h-10 flex items-center justify-center border b pointer-events-none bg-foreground text-background text-xl font-semibold">
-        <User className="w-5 h-5 " />
-      </button>
-    );
-  }
 
-  const getRoleIcon = (role: UserRoles) => {
-    switch (role) {
-      case UserRoles.ADMIN:
-        return <Building2 className="h-4 w-4 mr-2" />;
-      case UserRoles.SUPER_ADMIN:
-        return <Shield className="h-4 w-4 mr-2" />;
-      default:
-        return <User className="h-4 w-4 mr-2" />;
-    }
-  };
+  if (!user || isLoading) return <Skeleton className="size-10 rounded-full" />
+  if (isError) return (
+    <div className="size-10 rounded-full bg-destructive flex items-center justify-center">
+      <AlertCircle className="size-5.5 text-foreground" />
+    </div>
+  )
+
+  const RoleIcon = getRoleIcon(user.role)
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Avatar className="rounded-full relative hover:cursor-pointer size-10 flex items-center justify-center border border-gray-200">
+
+        <Avatar className="rounded-full relative hover:cursor-pointer size-10 flex items-center justify-center">
           <AvatarImage
             src={user?.avatar}
             alt={`${user?.username} Avatar`}
           />
-          <AvatarFallback className="bg-foreground text-background text-xl font-semibold">
+          <AvatarFallback className="text-xl font-semibold">
             {user?.username.charAt(0).toUpperCase()}
           </AvatarFallback>
         </Avatar>
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent align="end" className="w-60 shadow-2xl border py-2">
+      <DropdownMenuContent align="end" className="w-56 shadow-2xl border py-2">
+
         {/* User Info */}
         <DropdownMenuLabel className="flex flex-col items-start px-4 py-2 space-y-1">
           <span className="font-semibold truncate w-full flex items-center">
-            {getRoleIcon(user.role)}
-            {capitalizeFirst(user.username)}
+            <RoleIcon className="size-4 mr-4" />
+            {capitalizeFirstLetter(user.username)}
           </span>
           <span className="text-sm text-muted block truncate w-full">
             {user.email}
@@ -77,6 +70,14 @@ export default function UserMenu() {
           </Link>
         </DropdownMenuItem>
 
+        {/* Profile Link */}
+        <DropdownMenuItem asChild>
+          <Link href={getProfileLink()} className="flex items-center">
+            <User className="h-4 w-4 mr-2" />
+            Profile
+          </Link>
+        </DropdownMenuItem>
+
         {/* Role-specific Links */}
         {user.role === UserRoles.USER && (
           <>
@@ -89,24 +90,18 @@ export default function UserMenu() {
           </>
         )}
 
-        {/* {(user.role === UserRoles.ADMIN || user.role === UserRoles.SUPER_ADMIN) && (
-          <DropdownMenuItem asChild>
-            <Link href="/admin/settings">
-              <Settings className="h-4 w-4 mr-2" />
-              Admin Settings
-            </Link>
-          </DropdownMenuItem>
-        )} */}
 
         <DropdownMenuSeparator className="my-2 opacity-50" />
 
         {/* Logout */}
         <DropdownMenuItem
+          variant="destructive"
           onClick={async () => await signOut()}
-          className="text-red-600 hover:bg-red-50 flex items-center"
+          className="flex items-center"
         >
           <span>Logout</span>
         </DropdownMenuItem>
+
       </DropdownMenuContent>
     </DropdownMenu>
   );

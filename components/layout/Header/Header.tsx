@@ -11,6 +11,7 @@ import UserMenu from "./UserMenu";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
 import { useRoleNavigation } from "@/hooks/useRoleNavigation";
+import { cn } from "@/lib/utils";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -29,12 +30,16 @@ const Header = () => {
       <HeaderTopBar />
 
       <header
-        className={`sticky top-0 z-50 w-full shadow-lg transition-all duration-300 ${
-          scrolled ? "bg-white/75 backdrop-blur-2xl " : "bg-white"
-        }`}
+        className={
+          cn(
+            "sticky top-0 z-50 w-full transition-all duration-300",
+            scrolled ? "bg-white/75 backdrop-blur-2xl" : "bg-white"
+          )
+
+        }
       >
         <ContainerLayout className="py-0">
-          <div className="flex h-16 lg:h-20 items-center justify-between">
+          <div className="flex h-16 lg:h-18 items-center justify-between">
             {/* Logo */}
             <Logo />
 
@@ -57,10 +62,10 @@ const Header = () => {
         </ContainerLayout>
 
         {/* Mobile Menu Drawer */}
-        <MobileMenu 
-          isOpen={isMenuOpen} 
-          setIsOpen={setIsMenuOpen} 
-          navLinks={headerNavLinks} 
+        <MobileMenu
+          isOpen={isMenuOpen}
+          setIsOpen={setIsMenuOpen}
+          navLinks={headerNavLinks}
         />
       </header>
     </>

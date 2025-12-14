@@ -1,6 +1,8 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+@custom-variant dark (&:is(.dark *));
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -45,40 +47,83 @@
 
 :root {
   --radius: 0.625rem;
-  --background: #F9F9F6;
-  --foreground: #192335;
-  --card: #F9F9F6;
-  --card-foreground: #192335;
-  --popover: #F9F9F6;
-  --popover-foreground: #192335;
-  --primary: #097E52;
-  --background-gradient: linear-gradient(93.86deg, #006177 -2.6%, #269089 67.39%, #7ABC82 110.84%);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: #23B33A;
-  --secondary-foreground: #F9F9F6;
-  --muted: #6B7385;
-  --muted-foreground: #A8A8A8;
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: #097E52;
-  --destructive: #F50303;
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: rgba(9, 126, 82,.5);
 
+  /* ===================== */
+  /* Base Surfaces */
+  /* ===================== */
+  --background: #181A1E;         
+  --foreground: #E6E8EB;           /* soft text, high readability */
 
+  --card: #1F2126;                 /* subtle lift from background */
+  --card-foreground: #E6E8EB;
+
+  --popover: #1F2126;
+  --popover-foreground: #E6E8EB;
+
+  /* subtle background gradient for premium depth */
+  --background-gradient: linear-gradient(
+    120deg,
+    #1B1D21 0%,
+    #212429 50%,
+    #1E2024 100%
+  );
+
+  /* ===================== */
+  /* Brand Colors */
+  /* ===================== */
+  --primary: #0CC486;              /* brighter, rich green pop */
+  --primary-foreground: #181A1E;
+
+  --secondary: #30C992;            /* slightly softer, complementary */
+  --secondary-foreground: #181A1E;
+
+  /* ===================== */
+  /* Neutral Palette (Richer for Dark) */
+  /* ===================== */
+  --muted: #A0A7B5;                /* refined neutral for subtle hierarchy */
+  --muted-foreground: #BCC2CE;
+
+  --accent: #272B30;               /* dark accent for hover, frames */
+  --accent-foreground: #0CC486;
+
+  /* ===================== */
+  /* Feedback / States */
+  /* ===================== */
+  --destructive: #F25C5C;          /* noticeable but elegant */
+  --success: #0CC486;
+  --warning: #F5C74D;              /* soft amber */
+  --info: #00ACCF;                 /* calm cyan for info */
+
+  /* ===================== */
+  /* Borders / Inputs / Focus */
+  /* ===================== */
+  --border: #353940;               /* soft separation for premium look */
+  --input: #353940;
+  --ring: rgba(12, 196, 134, 0.45); /* subtle glow for focus */
+
+  /* ===================== */
+  /* Charts (unchanged) */
+  /* ===================== */
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
   --chart-4: oklch(0.828 0.189 84.429);
   --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: #192335;
-  --sidebar-primary: #097E52;
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: #097E52;
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+
+  /* ===================== */
+  /* Sidebar (Premium Dark) */
+  /* ===================== */
+  --sidebar: #1C1E22;              /* distinct but calm */
+  --sidebar-foreground: #E6E8EB;
+
+  --sidebar-primary: #0CC486;
+  --sidebar-primary-foreground: #181A1E;
+
+  --sidebar-accent: #2C3035;       /* hover / active row */
+  --sidebar-accent-foreground: #0CC486;
+
+  --sidebar-border: #353940;       /* subtle but visible separation */
+  --sidebar-ring: rgba(12, 196, 134, 0.38);
 }
 
 @layer base {
@@ -95,19 +140,40 @@
   .bg-gradient-primary {
     background: linear-gradient(93.86deg, #006177 -2.6%, #269089 67.39%, #7ABC82 110.84%);
   }
-  
+
   .text-gradient {
     background: linear-gradient(93.86deg, #006177 -2.6%, #269089 67.39%, #7ABC82 110.84%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
-  
+
   .shadow-soft {
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
   }
-  
+
   .shadow-medium {
     box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+  }
+}
+
+.dark {
+  --sidebar: hsl(240 5.9% 10%);
+  --sidebar-foreground: hsl(240 4.8% 95.9%);
+  --sidebar-primary: hsl(224.3 76.3% 48%);
+  --sidebar-primary-foreground: hsl(0 0% 100%);
+  --sidebar-accent: hsl(240 3.7% 15.9%);
+  --sidebar-accent-foreground: hsl(240 4.8% 95.9%);
+  --sidebar-border: hsl(240 3.7% 15.9%);
+  --sidebar-ring: hsl(217.2 91.2% 59.8%);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground;
   }
 }

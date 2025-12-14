@@ -40,7 +40,7 @@ const SigninForm = () => {
 
     const {
         signIn,
-        session
+        user
     } = useAuth()
 
 
@@ -66,8 +66,8 @@ const SigninForm = () => {
 
     useEffect(() => {
 
-        if (session) {
-            const role = session.user.role;
+        if (user) {
+            const role = user.role;
             if (role === UserRoles.SUPER_ADMIN) {
                 router.push("/super-admin/dashboard")
             } else if (role === UserRoles.ADMIN) {
@@ -77,7 +77,7 @@ const SigninForm = () => {
             }
         }
 
-    }, [session])
+    }, [user])
 
     return (
 
@@ -111,7 +111,7 @@ const SigninForm = () => {
                                             {type === "password" ? (
                                                 <InputGroupButton
                                                     onClick={() => togglePassword(name)}
-                                                    className="rounded-full group hover:!bg-foreground cursor-pointer"
+                                                    className="rounded-full group hover:bg-foreground! cursor-pointer"
                                                     size={"icon-sm"}
                                                     type="button"
                                                 >

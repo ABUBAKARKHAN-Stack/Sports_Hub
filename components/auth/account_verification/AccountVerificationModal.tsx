@@ -13,6 +13,7 @@ import { accountVerificationSchema } from "@/schemas/auth.schema";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import AuthButton from "../AuthButton";
 import { useAuth } from "@/context/AuthContext";
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 
 export default function AccountVerificationModal() {
     const { sendVerificationEmail, verifyAccount } = useAuth();
@@ -38,7 +39,7 @@ export default function AccountVerificationModal() {
         setResending(true);
         try {
             await sendVerificationEmail(setCodeSent);
-            
+
         } catch (error) {
             console.error("Error sending verification code:", error);
         } finally {
@@ -56,7 +57,7 @@ export default function AccountVerificationModal() {
     };
 
     return (
-        <Dialog open={isOpen} onOpenChange={() => {}} >
+        <Dialog open={isOpen} onOpenChange={() => { }} >
             <DialogContent showCloseButton={false}>
                 <DialogHeader>
                     <div className="flex items-start gap-4">
@@ -95,13 +96,21 @@ export default function AccountVerificationModal() {
                                     render={({ field, fieldState }) => (
                                         <Field data-invalid={fieldState.invalid}>
                                             <FieldLabel htmlFor="code">Verification Code</FieldLabel>
-                                            <Input
+                                         
+                                            <InputOTP
                                                 {...field}
                                                 id="code"
-                                                type="number"
-                                                placeholder="123456"
                                                 aria-invalid={fieldState.invalid}
-                                            />
+                                                maxLength={6}>
+                                                <InputOTPGroup>
+                                                    <InputOTPSlot index={0} />
+                                                    <InputOTPSlot index={1} />
+                                                    <InputOTPSlot index={2} />
+                                                    <InputOTPSlot index={3} />
+                                                    <InputOTPSlot index={4} />
+                                                    <InputOTPSlot index={5} />
+                                                </InputOTPGroup>
+                                            </InputOTP>
                                             {fieldState.invalid && (
                                                 <FieldError errors={[fieldState.error]} />
                                             )}

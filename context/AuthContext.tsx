@@ -15,11 +15,12 @@ import { IUser, UserRoles } from "@/types/main.types";
 import { useRouter } from "next/navigation";
 import { axiosInstance } from "@/lib/axios";
 import { UseFormReturn } from "react-hook-form";
-import z from "zod";
+import z, { email } from "zod";
 import { accountVerificationSchema, forgotPasswordSchema, resetPasswordSchema } from "@/schemas/auth.schema";
 import { useAuthQuery } from "@/hooks/queries/useAuthQuery";
 import { queryClient } from "@/lib/queryClient";
 import { QueryTags } from "@/types/query_tags";
+import { QueryObserverResult, RefetchOptions } from "@tanstack/react-query";
 
 type ResetPasswordType = {
     token: string,
@@ -35,6 +36,10 @@ type VerifyAccountType = {
 
 type AuthContextType = {
     user: IUser | null | undefined;
+    isLoading: boolean;
+    isError:boolean;
+    error:Error | null;
+    refetch: (options?: RefetchOptions | undefined) => Promise<QueryObserverResult<IUser | null, Error>>
     signIn: (provider?: string, options?: SignInOptions, authorizationParams?: Record<string, string>) => Promise<void>;
     signOut: (options?: SignOutParams) => Promise<void>;
     status: "authenticated" | "loading" | "unauthenticated",
@@ -60,7 +65,7 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
         getUserDetails
     } = useAuthQuery()
 
-    const { data: user } = getUserDetails(session)
+    const { data: user, isLoading,isError, refetch,error } = getUserDetails(session)
 
     const router = useRouter()
 
@@ -106,7 +111,7 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
             })
             localStorage.removeItem('cache')  //* Clear react-query cache on sign out
 
-            await NextAuthSignOut({ ...options, callbackUrl: "/signin",redirect:true });
+            await NextAuthSignOut({ ...options, callbackUrl: "/signin", redirect: true });
             console.log("[AuthContext] signOut(): User signed out.");
             successToast("Signed out successfully.");
 
@@ -159,7 +164,9 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const sendVerificationEmail = async (setCodeSent: Dispatch<SetStateAction<boolean>>) => {
         try {
-            const response = await axiosInstance.get('/auth/account-verification/send')
+            const response = await axiosInstance.post('/auth/account-verification/send', {
+                email: user?.email
+            })
             if (response.status === 200) {
                 successToast("Verification code sent! Check your email.");
                 setCodeSent(true)
@@ -174,14 +181,13 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const verifyAccount = async ({ code, form, setIsOpen }: VerifyAccountType) => {
         try {
-            const response = await axiosInstance.post('/auth/account-verification/verify-otp', { code });
+            const response = await axiosInstance.post('/auth/account-verification/verify-otp', { code, email: user?.email });
             if (response.status === 200) {
-                console.log('EY');
-
                 form.reset();
                 successToast(response.data.message);
                 setIsOpen(false)
                 await update()
+                queryClient.invalidateQueries({ queryKey: [QueryTags.ME] })
 
             }
         } catch (error: any) {
@@ -195,6 +201,10 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
     return (
         <AuthContext.Provider value={{
             user,
+            isError,
+            error,
+            isLoading,
+            refetch,
             signIn,
             signOut,
             forgotPassword,

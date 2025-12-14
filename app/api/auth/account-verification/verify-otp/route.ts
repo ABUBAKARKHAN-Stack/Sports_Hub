@@ -22,8 +22,7 @@ export const POST = async (request: NextRequest) => {
     await connectDb();
 
     const body = await request.json();
-    const { code } = body;
-    const { email } = session.user;
+    const { code, email } = body;
 
 
     if (!email || !code) {
