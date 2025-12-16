@@ -12,7 +12,7 @@ const AuthFormContainer: FC<Props> = ({ className = "", children }) => {
   return (
     <div
       className={cn(
-        "bg-white flex flex-col justify-center p-8",
+        "bg-card text-card-foreground flex flex-col justify-center p-8",
         className
       )}
     >

@@ -1,6 +1,6 @@
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
 import { ReactNode } from 'react'
-import { AdminsSidebar } from './AdminSidebar'
+import { AdminsSidebar } from './AdminsSidebar'
 import ContainerLayout from '../ContainerLayout'
 import AdminsHeader from './AdminsHeader'
 

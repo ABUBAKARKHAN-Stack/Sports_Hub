@@ -1,5 +1,6 @@
 enum QueryTags {
-    ME = "ME"
+    ME = "ME",
+    LOCATIONS="LOCATIONS"
 }
 
 export { QueryTags }

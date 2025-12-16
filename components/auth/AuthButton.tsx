@@ -23,10 +23,9 @@ const AuthButton: FC<Props> = ({
       type="submit"
       disabled={isSubmitting}
       className={cn(
-        "bg-foreground disabled:opacity-50 h-11 hover:cursor-pointer text-background hover:bg-[#131b2a]",
+        "bg-foreground disabled:opacity-50 h-10.5 hover:cursor-pointer text-background hover:bg-foreground/90",
         className
       )}
-      size="lg"
       {...props}
     >
       {isSubmitting ? (
@@ -37,7 +36,7 @@ const AuthButton: FC<Props> = ({
         btnText
       )}
 
-      <CircleArrowRight className="ml-2" />
+      <CircleArrowRight className="size-4.25" />
     </Button>
   );
 };

@@ -29,6 +29,6 @@
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
     "**/*.mts"
-, "hooks/toastNotifications.tsx"  ],
+, "hooks/toastNotifications.tsx", "exploit.js"  ],
   "exclude": ["node_modules"]
 }

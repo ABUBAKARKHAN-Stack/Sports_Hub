@@ -7,8 +7,6 @@ import { ReactNode } from 'react'
 const AppLayout = ({ children }: { children: ReactNode }) => {
     const { user } = useAuth()
 
-
-
     return (
         <>
             {children}

@@ -90,7 +90,6 @@ const SignupForm = () => {
     }
 
     useEffect(() => {
-
         return () => {
             if (timeoutRef.current) {
                 clearTimeout(timeoutRef.current)
@@ -112,8 +111,8 @@ const SignupForm = () => {
                         className={cn(
                             "p-4 border rounded-lg flex items-center gap-3 hover:cursor-pointer transition",
                             signupAs === role.id
-                                ? "border-primary bg-primary/10"
-                                : "border-muted"
+                                ? "border-primary bg-primary/5"
+                                : "border-input"
                         )}
                         onClick={() => setSignupAs(role.id)}
                     >
@@ -169,7 +168,7 @@ const SignupForm = () => {
                                             {type === "password" ? (
                                                 <InputGroupButton
                                                     onClick={() => togglePassword(name as "password" | "confirmPassword")}
-                                                    className="rounded-full group hover:!bg-foreground cursor-pointer"
+                                                    className="rounded-full group hover:bg-foreground! cursor-pointer"
                                                     size={"icon-sm"}
                                                     type="button"
                                                 >

@@ -6,6 +6,8 @@ import RootProvider from "@/providers/Providers";
 import { getServerSession } from "next-auth";
 import authOptions from "@/lib/authOptions";
 import { brandName } from "@/constants/main.constants";
+import 'leaflet/dist/leaflet.css';
+
 
 const outfit = Outfit({
   subsets: ["latin"],

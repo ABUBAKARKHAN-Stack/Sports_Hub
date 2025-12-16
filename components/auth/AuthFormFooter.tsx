@@ -10,8 +10,8 @@ const AuthFormFooter = ({ type = "signin", }) => {
         return <p className='text-center text-sm mt-4'>
             Remember Password?{' '}
             <Link
-                className='text-primary font-medium cursor-pointer'
-                href={"/signup"}
+                className='text-primary hover:underline font-medium cursor-pointer'
+                href={"/signin"}
             >
                 Sign In!
             </Link>
@@ -33,7 +33,7 @@ const AuthFormFooter = ({ type = "signin", }) => {
                 <p className='text-center text-sm mt-4'>
                     Don’t have an account?{' '}
                     <Link
-                        className='text-primary font-medium cursor-pointer'
+                        className='text-primary hover:underline font-medium cursor-pointer'
                         href={"/signup"}
                     >
                         Sign Up!
@@ -43,7 +43,7 @@ const AuthFormFooter = ({ type = "signin", }) => {
                 <p className='text-center text-sm mt-4'>
                     Have an account?{' '}
                     <Link
-                        className='text-primary font-medium cursor-pointer'
+                        className='text-primary hover:underline font-medium cursor-pointer'
                         href={"/signin"}
                     >
                         Sign In!

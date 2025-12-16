@@ -13,7 +13,7 @@ const GoogleSignInButton = () => {
                 type='button'
                 onClick={async () => await signIn("google")}
                 variant='outline'
-                className='flex items-center justify-center gap-3 w-full text-sm rounded-full text-foreground hover:bg-foreground/10 transition-colors'
+                className='flex items-center justify-center gap-3 w-full text-sm rounded-full'
             >
                 <GoogleIllustration className='w-5 h-5' />
                 <span className='text-base font-medium'>Sign in with Google</span>

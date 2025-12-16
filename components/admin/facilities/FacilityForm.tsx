@@ -21,6 +21,7 @@ import { Loader2, Plus, Trash2, Upload, MapPin, Phone, Clock, ImageIcon, VideoIc
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { z } from 'zod';
+import LocationsAndSearchInput from '@/components/shared/LocationsAndSearchInput';
 
 type FacilityFormData = {
   name: string;
@@ -644,6 +645,7 @@ export default function FacilityForm({
                     </FormItem>
                   )}
                 />
+
               </div>
 
               <FormField
@@ -673,10 +675,21 @@ export default function FacilityForm({
                     <FormItem>
                       <FormLabel>Address *</FormLabel>
                       <FormControl>
-                        <Textarea
+                        {/* <Textarea
                           placeholder="Enter complete address"
                           className="min-h-20 resize-none"
                           {...field}
+                        /> */}
+                        <LocationsAndSearchInput
+                          onSelect={(loc) => {
+                            if (loc) {
+
+                              form.setValue("location.coordinates.lat", loc.lat)
+                              form.setValue("location.coordinates.lng", loc.lng)
+                            }
+                          }
+
+                          }
                         />
                       </FormControl>
                       <FormMessage />
@@ -686,16 +699,14 @@ export default function FacilityForm({
 
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <FormLabel>Latitude (Optional)</FormLabel>
+                    <FormLabel>Latitude (Auto Fill When you choose locarion)</FormLabel>
                     <Input
+                      readOnly
                       type="number"
                       step="any"
                       placeholder="e.g., 33.6844"
                       value={form.watch('location.coordinates.lat') || ''}
-                      onChange={e => form.setValue('location.coordinates.lat',
-                        e.target.value === '' ? 0 : parseFloat(e.target.value),
-                        { shouldValidate: true }
-                      )}
+                     disabled
                     />
                   </div>
 

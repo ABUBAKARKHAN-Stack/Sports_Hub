@@ -28,6 +28,12 @@ interface IUser {
     provider: AuthProviderEnum
 }
 
+export interface Location {
+  formatted: string;
+  lat: number;
+  lng: number;
+}
+
 
 export type {
     DatabaseConnectionObject,
