@@ -2,10 +2,10 @@
 
 import { getLocations } from "@/helpers/geolocation.helpers";
 import useDebounced from "@/hooks/useDebounced";
-import { Location } from "@/types/main.types";
+import { ILocation } from "@/types/main.types";
 import { QueryTags } from "@/types/query_tags";
 import { useQuery } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
     Command,
     CommandInput,
@@ -20,23 +20,23 @@ import {
     InputGroupAddon,
     InputGroupButton,
     InputGroupInput,
+    InputGroupTextarea,
 } from "../ui/input-group";
-import { MapPin, Search, X } from "lucide-react";
+import { Map, MapPin, Search, X } from "lucide-react";
 import { Skeleton } from "../ui/skeleton";
 import MapPickWithSearch from "./MapPickWithSearch";
+import { Button } from "../ui/button";
 
 const LocationsAndSearchInput = ({
     onSelect,
 }: {
-    onSelect: (loc: Location | null) => void;
+    onSelect: (loc: ILocation | null) => void;
 }) => {
     const [search, setSearch] = useState("");
     const debouncedSearch = useDebounced(search, 750);
-    const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
+    const [selectedLocation, setSelectedLocation] = useState<ILocation | null>(null);
     const [open, setOpen] = useState(false);
 
-    // Prevent search query from firing if we just clicked a map location (and populated the search box)
-    // We only want to search if the USER types.
     const [isManualTyping, setIsManualTyping] = useState(false);
 
     const {
@@ -44,36 +44,33 @@ const LocationsAndSearchInput = ({
         isLoading,
         isError,
         error,
-    } = useQuery<Location[], Error>({
+    } = useQuery<ILocation[], Error>({
         queryKey: [QueryTags.LOCATIONS, debouncedSearch],
         queryFn: () => getLocations(debouncedSearch),
-        // Only fetch if debounced search exists AND it was typed manually
         enabled: !!debouncedSearch && isManualTyping,
         staleTime: 2 * 60 * 1000,
     });
 
     const isTyping = search.length >= 2 && search !== debouncedSearch && isManualTyping;
 
-    // Handle selection from either the List OR the Map
-    const handleLocationUpdate = (loc: Location) => {
+    const handleLocationUpdate = (loc: ILocation) => {
         setSelectedLocation(loc);
-        setSearch(loc.formatted || ""); // Sync Input Text
-        setIsManualTyping(false); // Prevent this update from triggering a new API search
+        setSearch(loc.address || "");
+        setIsManualTyping(false);
         onSelect(loc);
     };
 
     return (
         <>
             <InputGroup>
-                <InputGroupInput
+                <InputGroupTextarea
                     readOnly
                     placeholder="Search facility location..."
-                    // Show formatted address if selected, otherwise show current search text
-                    value={selectedLocation?.formatted || ""}
+                    value={selectedLocation?.address || ""}
                     onClick={() => setOpen(true)}
-                    className="cursor-pointer"
+                    className="cursor-pointer py-0!"
                 />
-                <InputGroupAddon align="inline-end">
+                <InputGroupAddon align="inline-end" >
                     {selectedLocation ? (
                         <InputGroupButton
                             aria-label="Clear location"
@@ -93,7 +90,8 @@ const LocationsAndSearchInput = ({
                 </InputGroupAddon>
             </InputGroup>
 
-            <CommandDialog className="max-w-2xl! z-999" open={open} onOpenChange={setOpen}>
+        
+            <CommandDialog className="max-w-5xl! z-999" open={open} onOpenChange={setOpen}>
                 <Command shouldFilter={false}>
                     <CommandInput
                         placeholder="Search facility location..."
@@ -102,11 +100,12 @@ const LocationsAndSearchInput = ({
                             setSearch(val);
                             setIsManualTyping(true);
                         }}
+                        className="truncate max-w-[90%]"
                     />
 
-                    <CommandList className="max-h-[80vh]"> {/* Increase height for map */}
-                        
-                        {/* 1. Loading State */}
+                    <CommandList className="max-h-[90vh]">
+
+                        {/* Loading State */}
                         {(isLoading || isTyping) && (
                             <CommandGroup>
                                 {Array.from({ length: 3 }).map((_, idx) => (
@@ -117,14 +116,14 @@ const LocationsAndSearchInput = ({
                             </CommandGroup>
                         )}
 
-                        {/* 2. Error State */}
+                        {/* Error State */}
                         {isError && (
                             <CommandItem disabled>
                                 {error?.message || "Something went wrong"}
                             </CommandItem>
                         )}
 
-                        {/* 3. Helper Text */}
+                        {/* Helper Text */}
                         {search.length < 2 && !selectedLocation && (
                             <div className="px-2 py-4 text-center">
                                 <p className="text-sm text-muted-foreground">
@@ -133,17 +132,17 @@ const LocationsAndSearchInput = ({
                             </div>
                         )}
 
-                        {/* 4. Search Results */}
+                        {/* Search Results */}
                         {results.length > 0 && isManualTyping && (
                             <CommandGroup heading="Suggestions">
                                 {results.map((loc, idx) => (
                                     <CommandItem
-                                        key={`${loc.lat}-${loc.lng}-${idx}`}
+                                        key={`${loc.coordinates.lat}-${loc.coordinates.lng}-${idx}`}
                                         onSelect={() => handleLocationUpdate(loc)}
                                         className="cursor-pointer"
                                     >
-                                        <MapPin className="mr-2 h-4 w-4" />
-                                        {loc.formatted}
+                                        <MapPin className="mr-2 size-4" />
+                                        {loc.address}
                                     </CommandItem>
                                 ))}
                             </CommandGroup>
@@ -153,13 +152,14 @@ const LocationsAndSearchInput = ({
                             <CommandEmpty>No locations found.</CommandEmpty>
                         )}
 
-                        {/* 5. The Map - Always Rendered at the bottom */}
-                        <div className="p-2 h-[350px] w-full mt-2">
-                             <MapPickWithSearch
+                        {/* Map */}
+                        <div className="p-2 sm:h-120 h-96 w-full mt-2">
+                            <MapPickWithSearch
                                 location={selectedLocation}
                                 onLocationSelect={handleLocationUpdate}
                                 autoCenter={true}
-                                className="rounded-md border"
+                                className="rounded-md h-full w-full"
+                                showMarker
                             />
                         </div>
 

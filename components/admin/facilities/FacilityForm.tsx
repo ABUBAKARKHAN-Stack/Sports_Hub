@@ -5,6 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -13,15 +14,16 @@ import {
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Loader2, Plus, Trash2, Upload, MapPin, Phone, Clock, ImageIcon, VideoIcon, AlertCircle, ArrowLeft } from 'lucide-react';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, Activity } from 'react';
 import { useRouter } from 'next/navigation';
 import { z } from 'zod';
 import LocationsAndSearchInput from '@/components/shared/LocationsAndSearchInput';
+import { ILocation } from '@/types/main.types';
 
 type FacilityFormData = {
   name: string;
@@ -589,540 +591,592 @@ export default function FacilityForm({
     else return (bytes / 1048576).toFixed(1) + ' MB';
   };
 
+  const [selectedLocation,setSelectedLocation] = useState<ILocation | null>(null)
+
   return (
-    <div className="space-y-6">
-      {/* Go Back Button */}
-      <div>
-        <Button
-          type="button"
-          variant="ghost"
-          onClick={handleGoBack}
-          className="gap-2 px-0 hover:bg-transparent"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Go Back
-        </Button>
-      </div>
+   <div className="space-y-6">
+  {/* Go Back Button */}
+  <div>
+    <Button
+      type="button"
+      variant="ghost"
+      onClick={handleGoBack}
+      className="gap-2 px-0 hover:bg-transparent"
+    >
+      <ArrowLeft className="h-4 w-4" />
+      Go Back
+    </Button>
+  </div>
 
-      {/* Form */}
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
+  {/* Form */}
+  <Form {...form}>
+    <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
 
-          {/* Basic Information Card */}
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="flex items-center gap-2">
-                <MapPin className="h-5 w-5" />
-                Basic Information
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Facility Name *</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Enter facility name" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+      {/* Basic Information Section */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2">
+            <MapPin className="h-5 w-5" />
+            Basic Information
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6">
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Facility Name *</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter facility name" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-                <FormField
-                  control={form.control}
-                  name="location.city"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>City *</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Enter city" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Description (Optional)</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder="Describe your facility"
+                      className="min-h-[100px] resize-none"
+                      value={field.value || ''}
+                      onChange={(e) => field.onChange(e.target.value || null)}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+        </CardContent>
+      </Card>
 
-              </div>
+      {/* Location Section */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2">
+            <MapPin className="h-5 w-5" />
+            Location Details
+          </CardTitle>
+          <CardDescription>
+            Address selection will automatically populate all location fields
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* <Activity mode={selectedLocation}> */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <FormField
+              control={form.control}
+              name="country"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Country *</FormLabel>
+                  <FormControl>
+                    <Input
+                      disabled
+                      readOnly
+                      placeholder="Will auto-fill when address is selected"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    Automatically detected from address
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-              <FormField
-                control={form.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Description (Optional)</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        placeholder="Describe your facility"
-                        className="min-h-[100px] resize-none"
-                        value={field.value || ''}
-                        onChange={(e) => field.onChange(e.target.value || null)}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+            <FormField
+              control={form.control}
+              name="city"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>City *</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Will auto-fill when address is selected"
+                      readOnly
+                      disabled
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    Automatically detected from address
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <FormField
-                  control={form.control}
-                  name="location.address"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Address *</FormLabel>
-                      <FormControl>
-                        {/* <Textarea
-                          placeholder="Enter complete address"
-                          className="min-h-20 resize-none"
-                          {...field}
-                        /> */}
-                        <LocationsAndSearchInput
-                          onSelect={(loc) => {
-                            if (loc) {
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <FormField
+              control={form.control}
+              name="location.address"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Full Address *</FormLabel>
+                  <FormControl>
+                    <LocationsAndSearchInput
+                      onSelect={(loc) => {
+                        if (loc) {
+                          form.setValue("location.coordinates.lat", loc.coordinates.lat)
+                          form.setValue("location.coordinates.lng", loc.coordinates.lng)
+                          form.setValue("location.address", loc.address!)
+                          // Assuming these fields will be auto-filled by your backend/API
+                          // You might want to set country and city here if available in the loc object
+                        }
+                      }}
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    Search for your facility address to auto-fill all location details
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-                              form.setValue("location.coordinates.lat", loc.lat)
-                              form.setValue("location.coordinates.lng", loc.lng)
-                            }
-                          }
-
-                          }
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <div className="space-y-4">
+            <div className="space-y-4">
+              <div>
+                <FormLabel>Coordinates (Auto-filled)</FormLabel>
+                <div className="grid grid-cols-2 gap-4 mt-2">
                   <div className="space-y-2">
-                    <FormLabel>Latitude (Auto Fill When you choose locarion)</FormLabel>
+                    <FormLabel className="text-sm font-normal">Latitude</FormLabel>
                     <Input
                       readOnly
                       type="number"
                       step="any"
                       placeholder="e.g., 33.6844"
-                      value={form.watch('location.coordinates.lat') || ''}
-                     disabled
+                      value={form.watch('location.coordinates.lat')}
+                      disabled
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <FormLabel>Longitude (Optional)</FormLabel>
+                    <FormLabel className="text-sm font-normal">Longitude</FormLabel>
                     <Input
+                      readOnly
                       type="number"
                       step="any"
                       placeholder="e.g., 73.0479"
-                      value={form.watch('location.coordinates.lng') || ''}
-                      onChange={e => form.setValue('location.coordinates.lng',
-                        e.target.value === '' ? 0 : parseFloat(e.target.value),
-                        { shouldValidate: true }
-                      )}
+                      value={form.watch('location.coordinates.lng')}
+                      disabled
                     />
                   </div>
                 </div>
+                <FormDescription className="mt-2">
+                  Automatically populated from address selection
+                </FormDescription>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
+          {/* </Activity> */}
+        </CardContent>
+      </Card>
 
-          {/* Contact Information Card */}
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="flex items-center gap-2">
-                <Phone className="h-5 w-5" />
-                Contact Information
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <FormField
-                  control={form.control}
-                  name="contact.phone"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Phone Number *</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="+92 XXX XXXXXXX"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+      {/* Contact Information Section */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2">
+            <Phone className="h-5 w-5" />
+            Contact Information
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <FormField
+              control={form.control}
+              name="contact.phone"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Phone Number *</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="+92 XXX XXXXXXX"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-                <FormField
-                  control={form.control}
-                  name="contact.email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Email *</FormLabel>
-                      <FormControl>
+            <FormField
+              control={form.control}
+              name="contact.email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email *</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="email"
+                      placeholder="email@example.com"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Business Hours Section */}
+      <Card>
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <Clock className="h-5 w-5" />
+              Business Hours
+            </CardTitle>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={addOpeningHour}
+              disabled={openingHours.length >= 7}
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Add Day
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {openingHours.map((hour, index) => (
+              <div key={`${hour.day}-${index}`} className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 border shadow-[0px_0px_4px_4px_var(--color-background)] rounded-lg">
+                <div className="flex-1 grid grid-cols-1 sm:grid-cols-4 gap-4">
+                  <div className="space-y-2">
+                    <FormLabel>Day</FormLabel>
+                    <Select
+                      value={hour.day}
+                      onValueChange={(value: FacilityFormData['openingHours'][0]['day']) =>
+                        updateOpeningHour(index, 'day', value)
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select day" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {DAYS.map(day => (
+                          <SelectItem
+                            key={day}
+                            value={day}
+                            disabled={openingHours.some((h, i) =>
+                              i !== index && h.day === day
+                            )}
+                          >
+                            {day}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="flex items-center space-x-3 pt-8">
+                    <Switch
+                      checked={hour.isClosed || false}
+                      onCheckedChange={(checked) => updateOpeningHour(index, 'isClosed', checked)}
+                    />
+                    <FormLabel className="font-normal cursor-pointer">
+                      Closed
+                    </FormLabel>
+                  </div>
+
+                  {!hour.isClosed && (
+                    <>
+                      <div className="space-y-2">
+                        <FormLabel>Opening Time</FormLabel>
                         <Input
-                          type="email"
-                          placeholder="email@example.com"
-                          {...field}
+                          type="time"
+                          value={hour.openingTime}
+                          onChange={(e) => updateOpeningHour(index, 'openingTime', e.target.value)}
                         />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
+                      </div>
+
+                      <div className="space-y-2">
+                        <FormLabel>Closing Time</FormLabel>
+                        <Input
+                          type="time"
+                          value={hour.closingTime}
+                          onChange={(e) => updateOpeningHour(index, 'closingTime', e.target.value)}
+                        />
+                      </div>
+                    </>
                   )}
-                />
+                </div>
+
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => removeOpeningHour(index)}
+                  className="text-red-600 hover:text-red-700 hover:bg-destructive/10"
+                  disabled={openingHours.length <= 1}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
               </div>
-            </CardContent>
-          </Card>
+            ))}
 
-          {/* Opening Hours Card */}
-          <Card>
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardTitle className="flex items-center gap-2">
-                  <Clock className="h-5 w-5" />
-                  Opening Hours
-                </CardTitle>
+            {!hasOpenDays() && (
+              <Badge variant="outline" className="w-full justify-center py-2 border-red-200 text-red-600">
+                At least one day must be open
+              </Badge>
+            )}
+
+            {form.formState.errors.openingHours && (
+              <p className="text-sm font-medium text-destructive">
+                {form.formState.errors.openingHours.message}
+              </p>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Media Gallery Section */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle>Media Gallery</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-8">
+          {/* Images Section */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-2">
+              <ImageIcon className="h-5 w-5" />
+              <h3 className="font-medium">Images</h3>
+              <Badge variant="destructive" className="ml-2">
+                Required
+              </Badge>
+            </div>
+
+            <div className="space-y-4">
+              <div className="border-2 border-dashed border-muted rounded-lg p-6 text-center hover:border-muted/90 transition-colors">
+                <Upload className="mx-auto h-12 w-12 text-muted-foreground" />
+                <p className="mt-2 text-sm text-muted-foreground">
+                  Upload facility images (JPEG, PNG, WebP)
+                </p>
+                <p className="text-xs text-gray-500 mb-4">
+                  Recommended size: 1200×800px
+                </p>
+                <Input
+                  type="file"
+                  multiple
+                  accept="image/*"
+                  className="hidden"
+                  id="image-upload"
+                  onChange={handleImageUpload}
+                />
                 <Button
                   type="button"
                   variant="outline"
-                  size="sm"
-                  onClick={addOpeningHour}
-                  disabled={openingHours.length >= 7}
+                  onClick={() => document.getElementById('image-upload')?.click()}
                 >
                   <Plus className="h-4 w-4 mr-2" />
-                  Add Day
+                  Upload Images
                 </Button>
               </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {openingHours.map((hour, index) => (
-                  <div key={`${hour.day}-${index}`} className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 bg-gray-50 rounded-lg">
-                    <div className="flex-1 grid grid-cols-1 sm:grid-cols-4 gap-4">
-                      <div className="space-y-2">
-                        <FormLabel>Day</FormLabel>
-                        <Select
-                          value={hour.day}
-                          onValueChange={(value: FacilityFormData['openingHours'][0]['day']) =>
-                            updateOpeningHour(index, 'day', value)
-                          }
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select day" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {DAYS.map(day => (
-                              <SelectItem
-                                key={day}
-                                value={day}
-                                disabled={openingHours.some((h, i) =>
-                                  i !== index && h.day === day
-                                )}
-                              >
-                                {day}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+
+              {imageFiles.length > 0 ? (
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
+                  {imageFiles.map((image, index) => (
+                    <div key={index} className="relative group rounded-lg overflow-hidden border">
+                      <img
+                        src={getImageSrc(image)}
+                        alt={`Facility image ${index + 1}`}
+                        className="w-full h-32 object-cover"
+                        onError={(e) => {
+                          console.error('Error loading image:', image);
+                          e.currentTarget.src = 'https://via.placeholder.com/300x200?text=Image+Error';
+                        }}
+                      />
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="destructive"
+                        className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8 p-0"
+                        onClick={() => removeImage(index)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                      <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white text-xs p-1">
+                        {typeof image === 'string' ? 'Existing Image' : `Image ${index + 1}`}
                       </div>
-
-                      <div className="flex items-center space-x-3 pt-8">
-                        <Switch
-                          checked={hour.isClosed || false}
-                          onCheckedChange={(checked) => updateOpeningHour(index, 'isClosed', checked)}
-                        />
-                        <FormLabel className="font-normal cursor-pointer">
-                          Closed
-                        </FormLabel>
-                      </div>
-
-                      {!hour.isClosed && (
-                        <>
-                          <div className="space-y-2">
-                            <FormLabel>Open Time</FormLabel>
-                            <Input
-                              type="time"
-                              value={hour.openingTime}
-                              onChange={(e) => updateOpeningHour(index, 'openingTime', e.target.value)}
-                            />
-                          </div>
-
-                          <div className="space-y-2">
-                            <FormLabel>Close Time</FormLabel>
-                            <Input
-                              type="time"
-                              value={hour.closingTime}
-                              onChange={(e) => updateOpeningHour(index, 'closingTime', e.target.value)}
-                            />
-                          </div>
-                        </>
-                      )}
                     </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-gray-500 mt-2">
+                  No images uploaded yet
+                </p>
+              )}
 
+              {form.formState.errors.gallery?.images && (
+                <p className="text-sm font-medium text-destructive">
+                  {form.formState.errors.gallery.images.message}
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* Video Section */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-2">
+              <VideoIcon className="h-5 w-5" />
+              <h3 className="font-medium">Introductory Video</h3>
+              <Badge variant="outline" className="ml-2">
+                Optional
+              </Badge>
+            </div>
+
+            <div className="space-y-4">
+              <div className="border-2 border-dashed border-muted rounded-lg p-6 text-center hover:border-muted/90 transition-colors">
+                <Upload className="mx-auto h-12 w-12 text-muted-foreground" />
+                <p className="mt-2 text-sm text-muted-foreground">
+                  Upload introductory video (MP4, MOV, AVI, WebM)
+                </p>
+                <p className="text-xs text-gray-500 mb-2">
+                  Maximum size: 10MB
+                </p>
+                <Input
+                  type="file"
+                  accept="video/mp4,video/mov,video/avi,video/webm"
+                  className="hidden"
+                  id="video-upload"
+                  onChange={handleVideoUpload}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => document.getElementById('video-upload')?.click()}
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Upload Video
+                </Button>
+              </div>
+
+              {/* Video Error Message */}
+              {videoError && (
+                <div className="flex items-center gap-2 text-sm text-destructive bg-destructive/10 p-3 rounded-lg">
+                  <AlertCircle className="h-4 w-4" />
+                  <span>{videoError}</span>
+                </div>
+              )}
+
+              {introductoryVideoFile && (
+                <div className="relative rounded-lg overflow-hidden border mt-4">
+                  <div className="p-4 bg-gray-50 flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div className="h-10 w-10 bg-red-100 rounded-lg flex items-center justify-center">
+                        <span className="text-red-600 font-medium">VID</span>
+                      </div>
+                      <div>
+                        <p className="font-medium">{getVideoName(introductoryVideoFile)}</p>
+                        <p className="text-xs text-gray-500">
+                          {typeof introductoryVideoFile === 'string'
+                            ? 'Existing video from server'
+                            : `${formatFileSize((introductoryVideoFile as File).size)} • ${(introductoryVideoFile as File).type}`}
+                        </p>
+                      </div>
+                    </div>
                     <Button
                       type="button"
                       variant="ghost"
                       size="sm"
-                      onClick={() => removeOpeningHour(index)}
                       className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                      disabled={openingHours.length <= 1}
+                      onClick={removeVideo}
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
-                ))}
 
-                {!hasOpenDays() && (
-                  <Badge variant="outline" className="w-full justify-center py-2 border-red-200 text-red-600">
-                    At least one day must be open
-                  </Badge>
-                )}
-
-                {form.formState.errors.openingHours && (
-                  <p className="text-sm font-medium text-destructive">
-                    {form.formState.errors.openingHours.message}
-                  </p>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Gallery Card */}
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle>Gallery</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-8">
-              {/* Images Section */}
-              <div className="space-y-4">
-                <div className="flex items-center gap-2">
-                  <ImageIcon className="h-5 w-5" />
-                  <h3 className="font-medium">Images</h3>
-                  <Badge variant="destructive" className="ml-2">
-                    Required
-                  </Badge>
-                </div>
-
-                <div className="space-y-4">
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
-                    <Upload className="mx-auto h-12 w-12 text-gray-400" />
-                    <p className="mt-2 text-sm text-gray-600">
-                      Upload facility images (JPEG, PNG, WebP)
-                    </p>
-                    <p className="text-xs text-gray-500 mb-4">
-                      Recommended size: 1200x800px
-                    </p>
-                    <Input
-                      type="file"
-                      multiple
-                      accept="image/*"
-                      className="hidden"
-                      id="image-upload"
-                      onChange={handleImageUpload}
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => document.getElementById('image-upload')?.click()}
+                  {/* Video Preview */}
+                  <div className="p-4">
+                    <video
+                      controls
+                      className="w-full rounded-md max-h-80"
+                      preload="metadata"
                     >
-                      <Plus className="h-4 w-4 mr-2" />
-                      Upload Images
-                    </Button>
+                      <source
+                        src={getVideoSrc(introductoryVideoFile)}
+                        type={typeof introductoryVideoFile === 'string'
+                          ? 'video/mp4'
+                          : (introductoryVideoFile as File).type}
+                      />
+                      Your browser does not support the video tag.
+                    </video>
                   </div>
-
-                  {imageFiles.length > 0 ? (
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
-                      {imageFiles.map((image, index) => (
-                        <div key={index} className="relative group rounded-lg overflow-hidden border">
-                          <img
-                            src={getImageSrc(image)}
-                            alt={`Facility image ${index + 1}`}
-                            className="w-full h-32 object-cover"
-                            onError={(e) => {
-                              console.error('Error loading image:', image);
-                              e.currentTarget.src = 'https://via.placeholder.com/300x200?text=Image+Error';
-                            }}
-                          />
-                          <Button
-                            type="button"
-                            size="sm"
-                            variant="destructive"
-                            className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8 p-0"
-                            onClick={() => removeImage(index)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                          <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white text-xs p-1">
-                            {typeof image === 'string' ? 'Existing Image' : `Image ${index + 1}`}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-sm text-gray-500 mt-2">
-                      No images uploaded yet
-                    </p>
-                  )}
-
-                  {form.formState.errors.gallery?.images && (
-                    <p className="text-sm font-medium text-destructive">
-                      {form.formState.errors.gallery.images.message}
-                    </p>
-                  )}
                 </div>
-              </div>
-
-              {/* Video Section */}
-              <div className="space-y-4">
-                <div className="flex items-center gap-2">
-                  <VideoIcon className="h-5 w-5" />
-                  <h3 className="font-medium">Introductory Video</h3>
-                  <Badge variant="outline" className="ml-2">
-                    Optional
-                  </Badge>
-                </div>
-
-                <div className="space-y-4">
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
-                    <Upload className="mx-auto h-12 w-12 text-gray-400" />
-                    <p className="mt-2 text-sm text-gray-600">
-                      Upload introductory video (MP4, MOV, AVI, WebM)
-                    </p>
-                    <p className="text-xs text-gray-500 mb-2">
-                      Maximum size: 10MB
-                    </p>
-                    <Input
-                      type="file"
-                      accept="video/mp4,video/mov,video/avi,video/webm"
-                      className="hidden"
-                      id="video-upload"
-                      onChange={handleVideoUpload}
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => document.getElementById('video-upload')?.click()}
-                    >
-                      <Plus className="h-4 w-4 mr-2" />
-                      Upload Video
-                    </Button>
-                  </div>
-
-                  {/* Video Error Message */}
-                  {videoError && (
-                    <div className="flex items-center gap-2 text-sm text-destructive bg-destructive/10 p-3 rounded-lg">
-                      <AlertCircle className="h-4 w-4" />
-                      <span>{videoError}</span>
-                    </div>
-                  )}
-
-                  {introductoryVideoFile && (
-                    <div className="relative rounded-lg overflow-hidden border mt-4">
-                      <div className="p-4 bg-gray-50 flex items-center justify-between">
-                        <div className="flex items-center space-x-3">
-                          <div className="h-10 w-10 bg-red-100 rounded-lg flex items-center justify-center">
-                            <span className="text-red-600 font-medium">VID</span>
-                          </div>
-                          <div>
-                            <p className="font-medium">{getVideoName(introductoryVideoFile)}</p>
-                            <p className="text-xs text-gray-500">
-                              {typeof introductoryVideoFile === 'string'
-                                ? 'Existing video from server'
-                                : `${formatFileSize((introductoryVideoFile as File).size)} • ${(introductoryVideoFile as File).type}`}
-                            </p>
-                          </div>
-                        </div>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                          onClick={removeVideo}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-
-                      {/* Video Preview */}
-                      <div className="p-4">
-                        <video
-                          controls
-                          className="w-full rounded-md max-h-80"
-                          preload="metadata"
-                        >
-                          <source src={getVideoSrc(introductoryVideoFile)}
-                            type={typeof introductoryVideoFile === 'string'
-                              ? 'video/mp4'
-                              : (introductoryVideoFile as File).type}
-                          />
-                          Your browser does not support the video tag.
-                        </video>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Form Actions */}
-          <div className="flex justify-between pt-4 border-t">
-            <div className="flex space-x-4">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleGoBack}
-                disabled={isLoading}
-                size="lg"
-                className="gap-2"
-              >
-                <ArrowLeft className="h-4 w-4" />
-                Go Back
-              </Button>
-
-              <Button
-                type="button"
-                variant="outline"
-                onClick={resetForm}
-                disabled={isLoading}
-                size="lg"
-              >
-                Reset Form
-              </Button>
-            </div>
-
-            <div className="flex space-x-4">
-              {onCancel && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={onCancel}
-                  disabled={isLoading}
-                  size="lg"
-                >
-                  Cancel
-                </Button>
               )}
-
-              <Button
-                type="submit"
-                disabled={isLoading || !validateImages() || !hasOpenDays() || !!videoError}
-                size="lg"
-                className="min-w-[150px]"
-              >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Saving...
-                  </>
-                ) : initialData ? 'Update Facility' : 'Create Facility'}
-              </Button>
             </div>
           </div>
-        </form>
-      </Form>
-    </div>
+        </CardContent>
+      </Card>
+
+      {/* Form Actions Section */}
+      <div className="flex justify-between pt-4 border-t">
+        <div className="flex space-x-4">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleGoBack}
+            disabled={isLoading}
+            size="lg"
+            className="gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Go Back
+          </Button>
+
+          <Button
+            type="button"
+            variant="outline"
+            onClick={resetForm}
+            disabled={isLoading}
+            size="lg"
+          >
+            Reset Form
+          </Button>
+        </div>
+
+        <div className="flex space-x-4">
+          {onCancel && (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onCancel}
+              disabled={isLoading}
+              size="lg"
+            >
+              Cancel
+            </Button>
+          )}
+
+          <Button
+            type="submit"
+            disabled={isLoading || !validateImages() || !hasOpenDays() || !!videoError}
+            size="lg"
+            className="min-w-[150px]"
+          >
+            {isLoading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Saving...
+              </>
+            ) : initialData ? 'Update Facility' : 'Create Facility'}
+          </Button>
+        </div>
+      </div>
+    </form>
+  </Form>
+</div>
   );
 }

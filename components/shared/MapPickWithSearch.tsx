@@ -4,17 +4,17 @@ import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvent, LayersCont
 import { useEffect, useMemo, useState } from "react";
 import "leaflet/dist/leaflet.css";
 import "@/lib/LeafletMarkerFix";
-import { Location } from "@/types/main.types";
+import { ILocation } from "@/types/main.types";
 import { cn } from "@/lib/utils";
+import { reverseGeocoding } from "@/helpers/geolocation.helpers";
 
 interface MapPickWithSearchProps {
-    location?: Partial<Location> | null;
+    location?: Partial<ILocation> | null;
     showMarker?: boolean;
     autoCenter?: boolean;
     zoom?: number;
-    height?: number | string;
     className?: string;
-    onLocationSelect: (location: Location) => void;
+    onLocationSelect: (location: ILocation) => void;
 }
 
 const DEFAULT_CENTER: [number, number] = [24.8607, 67.0011];
@@ -26,11 +26,11 @@ function SafeLocationMarker({
     showMarker,
     onLocationSelect,
 }: {
-    location?: Partial<Location> | null;
+    location?: Partial<ILocation> | null;
     autoCenter: boolean;
     zoom: number;
     showMarker: boolean;
-    onLocationSelect: (location: Location) => void;
+    onLocationSelect: (location: ILocation) => void;
 }) {
     const map = useMap();
     const [isFetching, setIsFetching] = useState(false);
@@ -41,31 +41,31 @@ function SafeLocationMarker({
         setIsFetching(true);
 
         try {
-            // 1. Basic Reverse Geocoding (OpenStreetMap/Nominatim)
-            // You can replace this with your own helper if you have one
-            const response = await fetch(
-                `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`
-            );
-            const data = await response.json();
+            const response = await reverseGeocoding(lat, lng)
 
-            const newLocation: Location = {
-                lat: lat,
-                lng: lng,
-                formatted: data.display_name || `${lat.toFixed(5)}, ${lng.toFixed(5)}`,
+            const newLocation: ILocation = {
+                address: response?.address || "Unknown Location",
+                city: response?.city,
+                country: response?.country,
+                coordinates: {
+                    ...response?.coordinates || { lat: 0, lng: 0 }
+                }
             };
 
-            // 2. Trigger the callback to update parent state
             onLocationSelect(newLocation);
 
-            // 3. Fly to the clicked spot
             map.flyTo([lat, lng], map.getZoom());
         } catch (error) {
             console.error("Failed to resolve address", error);
-            // Fallback if fetch fails
+            //! Fallback if fetch fails
             onLocationSelect({
-                lat,
-                lng,
-                formatted: `${lat.toFixed(5)}, ${lng.toFixed(5)}`
+                coordinates: {
+                    lat,
+                    lng
+                },
+                address: "Unknown Location",
+                city: "N/A",
+                country: "N/A"
             });
         } finally {
             setIsFetching(false);
@@ -73,13 +73,13 @@ function SafeLocationMarker({
     });
 
     const isValidLocation = useMemo(
-        () => typeof location?.lat === "number" && typeof location?.lng === "number",
+        () => typeof location?.coordinates?.lat === "number" && typeof location?.coordinates?.lng === "number",
         [location]
     );
 
     useEffect(() => {
         if (isValidLocation && autoCenter) {
-            map.flyTo([location!.lat!, location!.lng!], zoom, {
+            map.flyTo([location!.coordinates!.lat!, location!.coordinates!.lng!], zoom, {
                 animate: true,
             });
         }
@@ -88,8 +88,8 @@ function SafeLocationMarker({
     if (!isValidLocation || !showMarker) return null;
 
     return (
-        <Marker position={[location!.lat!, location!.lng!]}>
-            {location?.formatted && <Popup>{isFetching ? "Loading..." : location.formatted}</Popup>}
+        <Marker position={[location!.coordinates!.lat!, location!.coordinates!.lng!]}>
+            {location?.address && <Popup>{isFetching ? "Loading..." : location.address}</Popup>}
         </Marker>
     );
 }
@@ -99,34 +99,30 @@ export default function MapPickWithSearch({
     showMarker = true,
     autoCenter = true,
     zoom = 13,
-    height = 300,
     className = "",
     onLocationSelect,
 }: MapPickWithSearchProps) {
     const initialCenter = useMemo<[number, number]>(() => {
-        if (typeof location?.lat === "number" && typeof location?.lng === "number") {
-            return [location.lat, location.lng];
+        if (typeof location?.coordinates?.lat === "number" && typeof location?.coordinates?.lng === "number") {
+            return [location.coordinates.lat, location.coordinates.lng];
         }
         return DEFAULT_CENTER;
     }, [location]);
-    const { BaseLayer } = LayersControl;
 
 
     return (
         <MapContainer
             center={initialCenter}
             zoom={zoom}
-            style={{ height, width: "100%" }}
             scrollWheelZoom
+            maxZoom={19}
             className={cn(className)}
 
         >
-            {/* <BaseLayer name="Satellite View"> */}
             <TileLayer
                 url="https://{s}.google.com/vt/lyrs=p&x={x}&y={y}&z={z}"
                 subdomains={["mt0", "mt1", "mt2", "mt3"]}
             />
-            {/* </BaseLayer> */}
 
             <SafeLocationMarker
                 location={location}

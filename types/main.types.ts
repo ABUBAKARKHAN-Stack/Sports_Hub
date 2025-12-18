@@ -27,12 +27,16 @@ interface IUser {
     phone: string;
     provider: AuthProviderEnum
 }
+ export interface ILocation {
+  address?: string;
+  city?: string;
+  country?: string;
+  coordinates: {
+    lat: number;
+    lng: number;
+  };
+};
 
-export interface Location {
-  formatted: string;
-  lat: number;
-  lng: number;
-}
 
 
 export type {
@@ -59,14 +63,7 @@ export interface IFacility {
     name: string;
     description?: string;
     adminId: Types.ObjectId
-    location: {
-        address?: string;
-        city?: string;
-        coordinates?: {
-            lat: number;
-            lng: number;
-        };
-    };
+    location: ILocation,
     contact: {
         phone?: string;
         email?: string;

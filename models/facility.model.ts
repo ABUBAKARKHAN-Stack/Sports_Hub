@@ -22,9 +22,10 @@ const FacilitySchema = new Schema<FacilityModelType>(
     location: {
       address: { type: String, default: "" },
       city: { type: String, default: "" },
+      country: { type: String, default: "Pakistan" },
       coordinates: {
-        lat: { type: Number, default: 0 },
-        lng: { type: Number, default: 0 }
+        lat: { type: Number, required: true },
+        lng: { type: Number, required: true }
       }
     },
     contact: {
@@ -38,7 +39,7 @@ const FacilitySchema = new Schema<FacilityModelType>(
         required: true
       },
       openingTime: { type: String, default: null },
-      closingTime: { type: String, default:null },
+      closingTime: { type: String, default: null },
       isClosed: { type: Boolean, default: false }
     }],
     services: [{
