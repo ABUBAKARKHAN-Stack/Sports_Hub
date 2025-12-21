@@ -5,7 +5,7 @@ import useDebounced from "@/hooks/useDebounced";
 import { ILocation } from "@/types/main.types";
 import { QueryTags } from "@/types/query_tags";
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { Dispatch, ReactNode, SetStateAction, useState } from "react";
 import {
     Command,
     CommandInput,
@@ -27,15 +27,20 @@ import { Skeleton } from "../ui/skeleton";
 import MapPickWithSearch from "./MapPickWithSearch";
 import { Button } from "../ui/button";
 
-const LocationsAndSearchInput = ({
+const MapAndLocationAutoCompletion = ({
     onSelect,
+    children,
+    open,
+    setOpen
 }: {
     onSelect: (loc: ILocation | null) => void;
+    children?: ReactNode;
+    open: boolean;
+    setOpen: Dispatch<SetStateAction<boolean>>
 }) => {
     const [search, setSearch] = useState("");
     const debouncedSearch = useDebounced(search, 750);
     const [selectedLocation, setSelectedLocation] = useState<ILocation | null>(null);
-    const [open, setOpen] = useState(false);
 
     const [isManualTyping, setIsManualTyping] = useState(false);
 
@@ -62,35 +67,9 @@ const LocationsAndSearchInput = ({
 
     return (
         <>
-            <InputGroup>
-                <InputGroupTextarea
-                    readOnly
-                    placeholder="Search facility location..."
-                    value={selectedLocation?.address || ""}
-                    onClick={() => setOpen(true)}
-                    className="cursor-pointer py-0!"
-                />
-                <InputGroupAddon align="inline-end" >
-                    {selectedLocation ? (
-                        <InputGroupButton
-                            aria-label="Clear location"
-                            size="icon-xs"
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                setSelectedLocation(null);
-                                setSearch("");
-                                onSelect(null);
-                            }}
-                        >
-                            <X />
-                        </InputGroupButton>
-                    ) : (
-                        <Search />
-                    )}
-                </InputGroupAddon>
-            </InputGroup>
+                {children}
 
-        
+
             <CommandDialog className="max-w-5xl! z-999" open={open} onOpenChange={setOpen}>
                 <Command shouldFilter={false}>
                     <CommandInput
@@ -170,4 +149,4 @@ const LocationsAndSearchInput = ({
     );
 };
 
-export default LocationsAndSearchInput;
+export default MapAndLocationAutoCompletion;

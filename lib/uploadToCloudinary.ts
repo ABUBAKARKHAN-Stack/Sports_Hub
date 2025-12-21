@@ -16,12 +16,11 @@ export async function uploadToCloudinary(
             },
             (error: UploadApiErrorResponse | undefined, result: UploadApiResponse | undefined) => {
                 if (error) {
-                    console.error("Cloudinary upload error:", error);
-                    reject(new Error("Failed to upload to Cloudinary"));
+                    reject(new Error("Failed to upload to Cloudinary. Try Again! "));
                 } else if (result) {
                     resolve(result);
                 } else {
-                    reject(new Error("No result returned from Cloudinary"));
+                    reject(new Error("No result returned from Cloudinary. Try Again!"));
                 }
             }
         );

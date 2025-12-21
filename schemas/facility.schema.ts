@@ -1,14 +1,16 @@
-import * as z from "zod";
+import { WeekDays } from "@/types/main.types";
+import z from "zod";
 
 const coordinatesSchema = z.object({
-  lat: z.number().optional().default(0),
-  lng: z.number().optional().default(0),
+  lat: z.number(),
+  lng: z.number(),
 });
 
 const locationSchema = z.object({
   address: z.string().min(1, "Address is required"),
   city: z.string().min(1, "City is required"),
-  coordinates: coordinatesSchema.optional(),
+  country: z.string().min(1, "Country is required"),
+  coordinates: coordinatesSchema,
 });
 
 const contactSchema = z.object({
@@ -17,39 +19,38 @@ const contactSchema = z.object({
 });
 
 const openingHoursSchema = z.object({
-  day: z.enum(['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday']),
+  day: z.enum(WeekDays),
   openingTime: z.string().optional(),
   closingTime: z.string().optional(),
-  isClosed: z.boolean().optional().default(false),
+  isClosed: z.boolean().optional(),
 })
-.refine(
-  (data) => {
-    // If not closed, both openingTime and closingTime are required
-    if (!data.isClosed) {
-      return data.openingTime && data.openingTime.length > 0 && 
-             data.closingTime && data.closingTime.length > 0;
+  .refine(
+    (data) => {
+      //* If not closed, both openingTime and closingTime are required
+      if (!data.isClosed) {
+        return data.openingTime && data.openingTime.length > 0 &&
+          data.closingTime && data.closingTime.length > 0;
+      }
+      //* If closed, times are not required
+      return true;
+    },
+    {
+      message: "Opening and closing times are required when the facility is open",
+      path: ["openingTime"],
     }
-    // If closed, times are not required
-    return true;
-  },
-  {
-    message: "Opening and closing times are required when the facility is open",
-    path: ["openingTime"],
-  }
-);
+  );
 
 const gallerySchema = z.object({
   images: z
-    .custom<File[]>((files) => Array.isArray(files), {
-      message: "At least one image is required",
-    })
-    .refine((files) => files.length > 0, "At least one image is required"),
-  introductoryVideo: z.instanceof(File).optional().nullable(),
+    .array(z.union([z.instanceof(File), z.string()]))
+    .min(1, "At least one image is required")
+    .max(5, "Only up to 5 images can be uploaded"),
+  introductoryVideo: z.union([z.instanceof(File), z.string()]).nullable().optional(),
 });
 
-export const createFacilitySchema = z.object({
+export const facilityFormSchema = z.object({
   name: z.string().min(3, "Facility name must be at least 3 characters"),
-  description: z.string().optional().nullable(),
+  description: z.string().optional(),
   location: locationSchema,
   contact: contactSchema,
   openingHours: z.array(openingHoursSchema).min(1, "At least one opening hour required")
@@ -57,5 +58,9 @@ export const createFacilitySchema = z.object({
       (hours) => hours.some(hour => !hour.isClosed),
       "At least one day must be open"
     ),
-  gallery: gallerySchema.optional(),
+  gallery: gallerySchema,
 });
+
+
+
+export type FacilityFormDataType = z.infer<typeof facilityFormSchema>

@@ -15,7 +15,7 @@ async function getFacilities(req: NextRequest) {
         await connectDb();
 
         const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
-        const adminId = token?.sub;      
+        const adminId = token?.sub;
 
         if (!adminId) {
             return NextResponse.json(
@@ -120,6 +120,13 @@ async function createFacility(req: NextRequest) {
 
         //* Upload multiple images
         const images = formData.getAll("images") as File[];
+        
+        if (images.length > 5) {
+            return NextResponse.json(
+                new ApiError(400, "Only up to 5 images can be uploaded."),
+                { status: 400 }
+            )
+        }
         for (const file of images) {
             const buffer = Buffer.from(await file.arrayBuffer());
             const uploaded = await uploadToCloudinary(buffer, "facilities/gallery", "image");

@@ -1,5 +1,6 @@
 
 import axios from "axios";
+import { redirect } from "next/navigation";
 
 const axiosInstance = axios.create({
     baseURL: "/api",
@@ -13,7 +14,7 @@ axiosInstance.interceptors.response.use(
     (err) => {
         if (err.response?.status === 401 || err.response?.status === 403) {
             //! Handle unauthorized
-            window.location.href = "/signin";
+            redirect('/signin')
         }
         return Promise.reject(err);
     }

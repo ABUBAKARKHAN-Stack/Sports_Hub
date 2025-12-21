@@ -27,15 +27,26 @@ interface IUser {
     phone: string;
     provider: AuthProviderEnum
 }
- export interface ILocation {
-  address?: string;
-  city?: string;
-  country?: string;
-  coordinates: {
-    lat: number;
-    lng: number;
-  };
+export interface ILocation {
+    address?: string;
+    city?: string;
+    country?: string;
+    coordinates: {
+        lat: number;
+        lng: number;
+    };
 };
+
+export enum WeekDays {
+  Monday = 'Monday',
+  Tuesday = 'Tuesday',
+  Wednesday = 'Wednesday',
+  Thursday = 'Thursday',
+  Friday = 'Friday',
+  Saturday = 'Saturday',
+  Sunday = 'Sunday',
+}
+
 
 
 
@@ -86,21 +97,21 @@ export interface IFacility {
 
 //* Service Types
 export interface IService {
-  _id: string;
-  title: string;
-  description?: string;
-  facilityId: {
     _id: string;
-    name: string;
-  };
-  price: number;
-  duration: number;
-  capacity: number;
-  category: string;
-  images: string[];
-  isActive: boolean;
-  createdAt: Date;
-  updatedAt: Date;
+    title: string;
+    description?: string;
+    facilityId: {
+        _id: string;
+        name: string;
+    };
+    price: number;
+    duration: number;
+    capacity: number;
+    category: string;
+    images: string[];
+    isActive: boolean;
+    createdAt: Date;
+    updatedAt: Date;
 }
 
 export enum BookingStatusEnum {

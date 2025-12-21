@@ -1,7 +1,7 @@
 "use client"
 
 import AdminPageHeader from '@/components/admin/AdminPageHeader'
-import FacilityForm from '@/components/admin/facilities/FacilityForm'
+import FacilityForm from '@/components/admin/facilities/form/FacilityForm'
 import ContainerLayout from '@/components/layout/ContainerLayout'
 import { useFacility } from '@/context/admin/FacilityContext'
 import { Building } from 'lucide-react'

@@ -1,7 +1,7 @@
 "use client"
 import { useFacility } from '@/context/admin/FacilityContext'
 import React, { useEffect } from 'react'
-import FacilityForm from './FacilityForm'
+import FacilityForm from './form/FacilityForm'
 
 const UpdateFacility = ({ id }: { id: string }) => {
     const { getFacilityById, state, updateFacility } = useFacility()
